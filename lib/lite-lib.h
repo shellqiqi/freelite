@@ -22,6 +22,9 @@
 #include <pthread.h>
 #include <time.h>
 
+#include "../inc/rpc_types.h"
+#include "../inc/func_code.h"
+
 #define max(x, y)      \
     ({                 \
         x > y ? x : y; \

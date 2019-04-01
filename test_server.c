@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#include "rpc_types.h"
+#include "inc/rpc_types.h"
 
 #define SOCK_PATH SERVER_PATH
 #define SERVER_PATH "/var/tmp/tpf_unix_sock.server"

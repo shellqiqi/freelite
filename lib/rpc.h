@@ -3,7 +3,8 @@
 
 #include <stdint.h>
 
-#include "rpc_types.h"
+#include "../inc/rpc_types.h"
+#include "../inc/func_code.h"
 
 int rpc_get_node_id();
 int rpc_join(const struct para_join *para);

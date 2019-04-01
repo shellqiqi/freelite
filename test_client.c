@@ -1,4 +1,4 @@
-#include "lite-lib.h"
+#include "lib/lite-lib.h"
 
 int main(int argc, char *argv[])
 {

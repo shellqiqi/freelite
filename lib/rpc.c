@@ -8,8 +8,6 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#include "func_code.h"
-
 #define SERVER_PATH "/var/tmp/tpf_unix_sock.server"
 
 #define CLIENT_PATH "/var/tmp/" /* +5 for pid = 14 chars */

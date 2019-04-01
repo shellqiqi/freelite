@@ -1,6 +1,4 @@
 #include "lite-lib.h"
-#include "rpc_types.h"
-#include "func_code.h"
 #include "rpc.h"
 
 int userspace_liteapi_get_node_id(void)
