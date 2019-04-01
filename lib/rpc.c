@@ -26,7 +26,7 @@ static struct sockaddr_un client_sockaddr;
  *    name: server name.
  * Return: client file descriptor.
  */
-static int conn(const char *name)
+inline static int conn(const char *name)
 {
     int client_sock, rc, len;
 
@@ -36,7 +36,7 @@ static int conn(const char *name)
     /* Create a UNIX domain stream socket */
     if ((client_sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
     {
-        printf("SOCKET ERROR\n");
+        perror("SOCKET ERROR\n");
         exit(1);
     }
 
@@ -55,7 +55,7 @@ static int conn(const char *name)
     unlink(client_sockaddr.sun_path);
     if ((bind(client_sock, (struct sockaddr *)&client_sockaddr, len)) == -1)
     {
-        printf("BIND ERROR\n");
+        perror("BIND ERROR\n");
         close(client_sock);
         exit(1);
     }
@@ -70,7 +70,7 @@ static int conn(const char *name)
     rc = connect(client_sock, (struct sockaddr *)&server_sockaddr, len);
     if (rc == -1)
     {
-        printf("CONNECT ERROR\n");
+        perror("CONNECT ERROR\n");
         close(client_sock);
         exit(1);
     }
@@ -78,24 +78,23 @@ static int conn(const char *name)
     return client_sock;
 }
 
-static void disconn(int client_sock)
+inline static void disconn(int client_sock)
 {
     close(client_sock);
 }
 
 /* PUBLIC FUNCTIONS */
 
-int rpc_get_node_id()
+int rpc_handler(const struct rpc_req_msg *req_msg,
+                struct rpc_rsp_msg *rsp_msg)
 {
     int rc;
-    int func_code = FUNC_userspace_liteapi_get_node_id;
-
     int client_sock = conn(SERVER_PATH);
 
-    rc = send(client_sock, &func_code, sizeof(int), 0);
+    rc = send(client_sock, req_msg, sizeof(struct rpc_req_msg), 0);
     if (rc == -1)
     {
-        printf("SEND ERROR\n");
+        perror("SEND ERROR\n");
         close(client_sock);
         exit(1);
     }
@@ -105,59 +104,20 @@ int rpc_get_node_id()
     }
 
     /* Read the data sent from the server and print it. */
-    int rsp;
-    rc = recv(client_sock, &rsp, sizeof(int), 0);
+    rc = recv(client_sock, rsp_msg, sizeof(struct rpc_rsp_msg), 0);
     if (rc == -1)
     {
-        printf("RECV ERROR\n");
+        perror("RECV ERROR\n");
         close(client_sock);
         exit(1);
     }
     else
     {
-        printf("DATA RECEIVED = %d\n", rsp);
+        printf("DATA RECEIVED\n");
     }
 
     /* Close the socket and exit. */
-    close(client_sock);
+    disconn(client_sock);
 
-    return rsp;
-}
-
-int rpc_join(const struct para_join *para)
-{
-    int rc;
-
-    int client_sock = conn(SERVER_PATH);
-
-    rc = send(client_sock, para, sizeof(struct para_join), 0);
-    if (rc == -1)
-    {
-        printf("SEND ERROR\n");
-        close(client_sock);
-        exit(1);
-    }
-    else
-    {
-        printf("Data sent!\n");
-    }
-
-    /* Read the data sent from the server and print it. */
-    int rsp;
-    rc = recv(client_sock, &rsp, sizeof(int), 0);
-    if (rc == -1)
-    {
-        printf("RECV ERROR\n");
-        close(client_sock);
-        exit(1);
-    }
-    else
-    {
-        printf("DATA RECEIVED = %d\n", rsp);
-    }
-
-    /* Close the socket and exit. */
-    close(client_sock);
-
-    return rsp;
+    return 0;
 }

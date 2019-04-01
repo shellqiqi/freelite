@@ -25,7 +25,7 @@ void *server_accept_request(void *fd)
     rc = getpeername(client_sock, (struct sockaddr *)&client_sockaddr, &len);
     if (rc == -1)
     {
-        printf("GETPEERNAME ERROR\n");
+        perror("GETPEERNAME ERROR\n");
         close(client_sock);
         pthread_exit(NULL);
     }
@@ -36,27 +36,29 @@ void *server_accept_request(void *fd)
 
     /* Read and print the data incoming on the connected socket */
     printf("waiting to read...\n");
-    struct para_join para;
-    bytes_rec = recv(client_sock, &para, sizeof(struct para_join), 0);
+    struct rpc_req_msg req_msg;
+    bytes_rec = recv(client_sock, &req_msg, sizeof(struct rpc_req_msg), 0);
     if (bytes_rec == -1)
     {
-        printf("RECV ERROR\n");
+        perror("RECV ERROR\n");
         close(client_sock);
         pthread_exit(NULL);
     }
     else
     {
         printf("DATA RECEIVED\n");
-        printf("\tfunc_code: %d\n", para.func_code);
-        printf("\teth_port: %d\n", para.eth_port);
-        printf("\tib_port: %d\n", para.ib_port);
-        printf("\tinput_str: %s\n", para.input_str);
+        printf("\tfunc_code: %d\n", req_msg.func_code);
+        printf("\teth_port: %d\n", req_msg.msg_body.join_req.eth_port);
+        printf("\tib_port: %d\n", req_msg.msg_body.join_req.ib_port);
+        printf("\tinput_str: %s\n", req_msg.msg_body.join_req.input_str);
     }
 
     /* Send data back to the connected socket */
-    int rsp = 12;
+    struct rpc_rsp_msg rsp_msg = {
+        .msg_body.int_rval = 12
+    };
     printf("Sending data...\n");
-    rc = send(client_sock, &rsp, sizeof(int), 0);
+    rc = send(client_sock, &rsp_msg, sizeof(struct rpc_rsp_msg), 0);
     if (rc == -1)
     {
         printf("SEND ERROR\n");
@@ -70,7 +72,6 @@ void *server_accept_request(void *fd)
 
     /* Close the sockets and exit */
     close(client_sock);
-
     pthread_exit(NULL);
 }
 
