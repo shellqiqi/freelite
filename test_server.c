@@ -5,11 +5,74 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <pthread.h>
 
 #include "inc/rpc_types.h"
 
 #define SOCK_PATH SERVER_PATH
 #define SERVER_PATH "/var/tmp/tpf_unix_sock.server"
+
+void *server_accept_request(void *fd)
+{
+    int len, rc, bytes_rec;
+    int client_sock = *((int *)fd);
+
+    struct sockaddr_un client_sockaddr;
+    memset(&client_sockaddr, 0, sizeof(struct sockaddr_un));
+
+    /* Get the name of the connected socket */
+    len = sizeof(client_sockaddr);
+    rc = getpeername(client_sock, (struct sockaddr *)&client_sockaddr, &len);
+    if (rc == -1)
+    {
+        printf("GETPEERNAME ERROR\n");
+        close(client_sock);
+        pthread_exit(NULL);
+    }
+    else
+    {
+        printf("Client socket filepath: %s\n", client_sockaddr.sun_path);
+    }
+
+    /* Read and print the data incoming on the connected socket */
+    printf("waiting to read...\n");
+    struct para_join para;
+    bytes_rec = recv(client_sock, &para, sizeof(struct para_join), 0);
+    if (bytes_rec == -1)
+    {
+        printf("RECV ERROR\n");
+        close(client_sock);
+        pthread_exit(NULL);
+    }
+    else
+    {
+        printf("DATA RECEIVED\n");
+        printf("\tfunc_code: %d\n", para.func_code);
+        printf("\teth_port: %d\n", para.eth_port);
+        printf("\tib_port: %d\n", para.ib_port);
+        printf("\tinput_str: %s\n", para.input_str);
+    }
+
+    /* Send data back to the connected socket */
+    int rsp = 12;
+    printf("Sending data...\n");
+    rc = send(client_sock, &rsp, sizeof(int), 0);
+    if (rc == -1)
+    {
+        printf("SEND ERROR\n");
+        close(client_sock);
+        pthread_exit(NULL);
+    }
+    else
+    {
+        printf("Data sent!\n");
+    }
+
+    /* Close the sockets and exit */
+    close(client_sock);
+
+    pthread_exit(NULL);
+}
 
 int main(void)
 {
@@ -20,14 +83,12 @@ int main(void)
     char buf[256];
     int backlog = 10;
     memset(&server_sockaddr, 0, sizeof(struct sockaddr_un));
-    memset(&client_sockaddr, 0, sizeof(struct sockaddr_un));
-    memset(buf, 0, 256);
 
     /* Create a UNIX domain stream socket */
     server_sock = socket(AF_UNIX, SOCK_STREAM, 0);
     if (server_sock == -1)
     {
-        printf("SOCKET ERROR\n");
+        perror("SOCKET ERROR\n");
         exit(1);
     }
 
@@ -47,7 +108,7 @@ int main(void)
     rc = bind(server_sock, (struct sockaddr *)&server_sockaddr, len);
     if (rc == -1)
     {
-        printf("BIND ERROR\n");
+        perror("BIND ERROR\n");
         close(server_sock);
         exit(1);
     }
@@ -56,71 +117,27 @@ int main(void)
     rc = listen(server_sock, backlog);
     if (rc == -1)
     {
-        printf("LISTEN ERROR\n");
+        perror("LISTEN ERROR\n");
         close(server_sock);
         exit(1);
     }
     printf("socket listening...\n");
 
-    /* Accept an incoming connection */
-    client_sock = accept(server_sock, (struct sockaddr *)&client_sockaddr, &len);
-    if (client_sock == -1)
+    pthread_t pth;
+    while (1)
     {
-        printf("ACCEPT ERROR\n");
-        close(server_sock);
-        close(client_sock);
-        exit(1);
-    }
-
-    /* Get the name of the connected socket */
-    len = sizeof(client_sockaddr);
-    rc = getpeername(client_sock, (struct sockaddr *)&client_sockaddr, &len);
-    if (rc == -1)
-    {
-        printf("GETPEERNAME ERROR\n");
-        close(server_sock);
-        close(client_sock);
-        exit(1);
-    }
-    else
-    {
-        printf("Client socket filepath: %s\n", client_sockaddr.sun_path);
-    }
-
-    /* Read and print the data incoming on the connected socket */
-    printf("waiting to read...\n");
-    struct para_join para;
-    bytes_rec = recv(client_sock, &para, sizeof(struct para_join), 0);
-    if (bytes_rec == -1)
-    {
-        printf("RECV ERROR\n");
-        close(server_sock);
-        close(client_sock);
-        exit(1);
-    }
-    else
-    {
-        printf("DATA RECEIVED\n");
-        printf("\tfunc_code: %d\n", para.func_code);
-        printf("\teth_port: %d\n", para.eth_port);
-        printf("\tib_port: %d\n", para.ib_port);
-        printf("\tinput_str: %s\n", para.input_str);
-    }
-
-    /* Send data back to the connected socket */
-    int rsp = 12;
-    printf("Sending data...\n");
-    rc = send(client_sock, &rsp, sizeof(int), 0);
-    if (rc == -1)
-    {
-        printf("SEND ERROR\n");
-        close(server_sock);
-        close(client_sock);
-        exit(1);
-    }
-    else
-    {
-        printf("Data sent!\n");
+        /* Accept an incoming connection */
+        if ((client_sock = accept(server_sock, (struct sockaddr *)&client_sockaddr, &len)) == -1)
+        {
+            perror("ACCEPT ERROR\n");
+            close(server_sock);
+            close(client_sock);
+            exit(1);
+        }
+        if (pthread_create(&pth, NULL, server_accept_request, &client_sock) < 0)
+        {
+            perror("THREAD CREATE ERROR\n");
+        }
     }
 
     /* Close the sockets and exit */
