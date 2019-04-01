@@ -8,8 +8,9 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#define SERVER_PATH "tpf_unix_sock.server"
-#define DATA "Hello from client"
+#include "func_code.h"
+
+#define SERVER_PATH "/var/tmp/tpf_unix_sock.server"
 
 #define CLIENT_PATH "/var/tmp/" /* +5 for pid = 14 chars */
 
@@ -19,50 +20,7 @@
 static struct sockaddr_un server_sockaddr;
 static struct sockaddr_un client_sockaddr;
 
-/* PUBLIC FUNCTIONS */
-
-int test(void)
-{
-    int rc;
-    char buf[256];
-
-    int client_sock = conn(SERVER_PATH);
-
-    /* Copy the data to the buffer and end it to the server socket. */
-    strcpy(buf, DATA);
-    printf("Sending data...\n");
-    rc = send(client_sock, buf, strlen(buf), 0);
-    if (rc == -1)
-    {
-        printf("SEND ERROR = %d\n", sock_errno());
-        close(client_sock);
-        exit(1);
-    }
-    else
-    {
-        printf("Data sent!\n");
-    }
-
-    /* Read the data sent from the server and print it. */
-    printf("Waiting to recieve data...\n");
-    memset(buf, 0, sizeof(buf));
-    rc = recv(client_sock, buf, sizeof(buf), 0);
-    if (rc == -1)
-    {
-        printf("RECV ERROR = %d\n", sock_errno());
-        close(client_sock);
-        exit(1);
-    }
-    else
-    {
-        printf("DATA RECEIVED = %s\n", buf);
-    }
-
-    /* Close the socket and exit. */
-    close(client_sock);
-
-    return 0;
-}
+/* PRIVATE FUNCTIONS */
 
 /**
  * Connect server.
@@ -70,7 +28,7 @@ int test(void)
  *    name: server name.
  * Return: client file descriptor.
  */
-int conn(const char *name)
+static int conn(const char *name)
 {
     int client_sock, rc, len;
 
@@ -80,7 +38,7 @@ int conn(const char *name)
     /* Create a UNIX domain stream socket */
     if ((client_sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
     {
-        printf("SOCKET ERROR = %d\n", sock_errno());
+        printf("SOCKET ERROR\n");
         exit(1);
     }
 
@@ -99,7 +57,7 @@ int conn(const char *name)
     unlink(client_sockaddr.sun_path);
     if ((bind(client_sock, (struct sockaddr *)&client_sockaddr, len)) == -1)
     {
-        printf("BIND ERROR: %d\n", sock_errno());
+        printf("BIND ERROR\n");
         close(client_sock);
         exit(1);
     }
@@ -114,7 +72,7 @@ int conn(const char *name)
     rc = connect(client_sock, (struct sockaddr *)&server_sockaddr, len);
     if (rc == -1)
     {
-        printf("CONNECT ERROR = %d\n", sock_errno());
+        printf("CONNECT ERROR\n");
         close(client_sock);
         exit(1);
     }
@@ -122,7 +80,86 @@ int conn(const char *name)
     return client_sock;
 }
 
-void disconn(int client_sock)
+static void disconn(int client_sock)
 {
     close(client_sock);
+}
+
+/* PUBLIC FUNCTIONS */
+
+int rpc_get_node_id()
+{
+    int rc;
+    int func_code = FUNC_userspace_liteapi_get_node_id;
+
+    int client_sock = conn(SERVER_PATH);
+
+    rc = send(client_sock, &func_code, sizeof(int), 0);
+    if (rc == -1)
+    {
+        printf("SEND ERROR\n");
+        close(client_sock);
+        exit(1);
+    }
+    else
+    {
+        printf("Data sent!\n");
+    }
+
+    /* Read the data sent from the server and print it. */
+    int rsp;
+    rc = recv(client_sock, &rsp, sizeof(int), 0);
+    if (rc == -1)
+    {
+        printf("RECV ERROR\n");
+        close(client_sock);
+        exit(1);
+    }
+    else
+    {
+        printf("DATA RECEIVED = %d\n", rsp);
+    }
+
+    /* Close the socket and exit. */
+    close(client_sock);
+
+    return rsp;
+}
+
+int rpc_join(const struct para_join *para)
+{
+    int rc;
+
+    int client_sock = conn(SERVER_PATH);
+
+    rc = send(client_sock, para, sizeof(struct para_join), 0);
+    if (rc == -1)
+    {
+        printf("SEND ERROR\n");
+        close(client_sock);
+        exit(1);
+    }
+    else
+    {
+        printf("Data sent!\n");
+    }
+
+    /* Read the data sent from the server and print it. */
+    int rsp;
+    rc = recv(client_sock, &rsp, sizeof(int), 0);
+    if (rc == -1)
+    {
+        printf("RECV ERROR\n");
+        close(client_sock);
+        exit(1);
+    }
+    else
+    {
+        printf("DATA RECEIVED = %d\n", rsp);
+    }
+
+    /* Close the socket and exit. */
+    close(client_sock);
+
+    return rsp;
 }

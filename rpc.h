@@ -3,7 +3,9 @@
 
 #include <stdint.h>
 
-int conn(const char *name);
-void disconn(int client_sock);
+#include "rpc_types.h"
+
+int rpc_get_node_id();
+int rpc_join(const struct para_join *para);
 
 #endif
