@@ -27,7 +27,7 @@
         x > y ? x : y; \
     })
 
-    struct lmr_info
+struct lmr_info
 {
     void *addr;
     size_t length;

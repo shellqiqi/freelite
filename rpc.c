@@ -28,10 +28,7 @@ int test(void)
 
     int client_sock = conn(SERVER_PATH);
 
-    /************************************/
-    /* Copy the data to the buffer and  */
-    /* send it to the server socket.    */
-    /************************************/
+    /* Copy the data to the buffer and end it to the server socket. */
     strcpy(buf, DATA);
     printf("Sending data...\n");
     rc = send(client_sock, buf, strlen(buf), 0);
@@ -46,10 +43,7 @@ int test(void)
         printf("Data sent!\n");
     }
 
-    /**************************************/
-    /* Read the data sent from the server */
-    /* and print it.                      */
-    /**************************************/
+    /* Read the data sent from the server and print it. */
     printf("Waiting to recieve data...\n");
     memset(buf, 0, sizeof(buf));
     rc = recv(client_sock, buf, sizeof(buf), 0);
@@ -64,10 +58,8 @@ int test(void)
         printf("DATA RECEIVED = %s\n", buf);
     }
 
-    /******************************/
     /* Close the socket and exit. */
-    /******************************/
-    close();
+    close(client_sock);
 
     return 0;
 }
@@ -104,7 +96,7 @@ int conn(const char *name)
     sprintf(client_sockaddr.sun_path, "%s%05d", CLIENT_PATH, getpid());
     len = sizeof(client_sockaddr);
 
-    unlink(CLIENT_PATH);
+    unlink(client_sockaddr.sun_path);
     if ((bind(client_sock, (struct sockaddr *)&client_sockaddr, len)) == -1)
     {
         printf("BIND ERROR: %d\n", sock_errno());
