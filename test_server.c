@@ -116,6 +116,11 @@ void *server_accept_request(void *fd)
             printf("  num: %d\n", req_msg.msg_body.dist_barrier_req.num);
             rsp_msg.msg_body.int_rval = -7;
             break;
+        case FUNC_userspace_liteapi_query_port:
+            printf("  target_node: %d\n", req_msg.msg_body.query_port_req.target_node);
+            printf("  designed_port: %d\n", req_msg.msg_body.query_port_req.designed_port);
+            rsp_msg.msg_body.int_rval = -9;
+            break;
         default:
             perror("UNKNOWN FUNC CODE\n");
             close(client_sock);

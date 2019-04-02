@@ -72,6 +72,12 @@ struct dist_barrier_req_msg
     unsigned int num;
 };
 
+struct query_port_req_msg
+{
+    int target_node;
+    int designed_port;
+};
+
 /* RPC Request message */
 struct rpc_req_msg
 {
@@ -86,6 +92,7 @@ struct rpc_req_msg
         struct reply_message_req_msg reply_message_req;
         struct register_application_req_msg register_application_req;
         struct dist_barrier_req_msg dist_barrier_req;
+        struct query_port_req_msg query_port_req;
     } msg_body;
 };
 

@@ -275,3 +275,27 @@ int userspace_liteapi_dist_barrier(unsigned int num)
     rpc_handler(&req_msg, &rsp_msg);
     return rsp_msg.msg_body.int_rval;
 }
+
+/**
+ * Get the metadata information for RPC request
+ * must be performed before issueing a RPC request
+ * Input:
+ *    target_node: target node id
+ *    designed_port: target port
+ * Return: Error or info code
+ */
+int userspace_liteapi_query_port(int target_node,
+                                 int designed_port)
+{
+    struct rpc_req_msg req_msg = {
+        .func_code = FUNC_userspace_liteapi_query_port,
+        .msg_body.query_port_req = {
+            .target_node = target_node,
+            .designed_port = designed_port
+        }
+    };
+    struct rpc_rsp_msg rsp_msg;
+
+    rpc_handler(&req_msg, &rsp_msg);
+    return rsp_msg.msg_body.int_rval;
+}
