@@ -223,3 +223,35 @@ int userspace_liteapi_reply_message(void *addr,
     rpc_handler(&req_msg, &rsp_msg);
     return rsp_msg.msg_body.int_rval;
 }
+
+/**
+ * Register an application to a specific port for RPC function
+ * Input:
+ *    destined_port: the targetted port
+ *    max_size_per_message: register the possible max size
+ *    max_user_per_node: maximum user per node for this operation(not used in current version but for future QoS development)
+ *    name: name/string of the application
+ *    name_len: length of the name
+ * Return: Error code
+ */
+int userspace_liteapi_register_application(unsigned int destined_port,
+                                           unsigned int max_size_per_message,
+                                           unsigned int max_user_per_node,
+                                           char *name,
+                                           uint64_t name_len)
+{
+    struct rpc_req_msg req_msg = {
+        .func_code = FUNC_userspace_liteapi_register_application,
+        .msg_body.register_application_req = {
+            .destined_port = destined_port,
+            .max_size_per_message = max_size_per_message,
+            .max_user_per_node = max_user_per_node,
+            .name_len = name_len
+        }
+    };
+    strncpy(req_msg.msg_body.register_application_req.name, name, name_len);
+    struct rpc_rsp_msg rsp_msg;
+
+    rpc_handler(&req_msg, &rsp_msg);
+    return rsp_msg.msg_body.int_rval;
+}

@@ -104,6 +104,14 @@ void *server_accept_request(void *fd)
             printf("  receive_size: %lu\n", req_msg.msg_body.reply_message_req.descriptor);
             rsp_msg.msg_body.int_rval = -4;
             break;
+        case FUNC_userspace_liteapi_register_application:
+            printf("  destined_port: %d\n", req_msg.msg_body.register_application_req.destined_port);
+            printf("  max_size_per_message: %d\n", req_msg.msg_body.register_application_req.max_size_per_message);
+            printf("  max_user_per_node: %d\n", req_msg.msg_body.register_application_req.max_user_per_node);
+            printf("  name: %s\n", req_msg.msg_body.register_application_req.name);
+            printf("  name_len: %lu\n", req_msg.msg_body.register_application_req.name_len);
+            rsp_msg.msg_body.int_rval = -10;
+            break;
         default:
             perror("UNKNOWN FUNC CODE\n");
             close(client_sock);

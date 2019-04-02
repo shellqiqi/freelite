@@ -18,5 +18,7 @@ int main(int argc, char *argv[])
            userspace_liteapi_receive_message_fast(1, (void *)0x100, 1024, (uintptr_t *)0x200, (int *)0x300, 1));
     printf("userspace_liteapi_reply_message: %d\n",
            userspace_liteapi_reply_message((void *)0xf88, 128, 321));
+    printf("userspace_liteapi_register_application: %d\n",
+           userspace_liteapi_register_application(1, 256, 4, "hello world", strlen("hello world")));
     return 0;
 }

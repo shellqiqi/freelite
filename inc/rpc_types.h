@@ -58,6 +58,15 @@ struct reply_message_req_msg
     uintptr_t descriptor;
 };
 
+struct register_application_req_msg
+{
+    unsigned int destined_port;
+    unsigned int max_size_per_message;
+    unsigned int max_user_per_node;
+    char name[32];
+    uint64_t name_len;
+};
+
 /* RPC Request message */
 struct rpc_req_msg
 {
@@ -70,6 +79,7 @@ struct rpc_req_msg
         struct send_reply_imm_fast_req_msg send_reply_imm_fast_req;
         struct receive_message_fast_req_msg receive_message_fast_req;
         struct reply_message_req_msg reply_message_req;
+        struct register_application_req_msg register_application_req;
     } msg_body;
 };
 
