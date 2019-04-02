@@ -1,6 +1,10 @@
 #include "lite-lib.h"
 #include "rpc.h"
 
+/**
+ * Get the id of current node
+ * Return: node id
+ */
 int userspace_liteapi_get_node_id()
 {
     struct rpc_req_msg req_msg = {
@@ -12,6 +16,14 @@ int userspace_liteapi_get_node_id()
     return rsp_msg.msg_body.int_rval;
 }
 
+/**
+ * Establish a connection to a remote cluster manager
+ * Input:
+ *    input_str: ipv4 address in string form
+ *    eth_port: respected remote ethernet port
+ *    ib_port: local infiniband device port
+ * Return: Node id or error code
+ */
 int userspace_liteapi_join(char *input_str,
                            int eth_port,
                            int ib_port)

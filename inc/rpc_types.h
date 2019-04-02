@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+/* Request messages */
+
 struct join_req_msg
 {
     char input_str[16];
@@ -77,6 +79,10 @@ struct query_port_req_msg
     int target_node;
     int designed_port;
 };
+
+/* Response messages */
+
+/* None */
 
 /* RPC Request message */
 struct rpc_req_msg
