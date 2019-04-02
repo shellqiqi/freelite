@@ -12,12 +12,6 @@
 
 #define CLIENT_PATH "/var/tmp/" /* +5 for pid = 14 chars */
 
-/* PRIVATE VARIABLES */
-
-/* socket addresses of server and client */
-static struct sockaddr_un server_sockaddr;
-static struct sockaddr_un client_sockaddr;
-
 /* PRIVATE FUNCTIONS */
 
 /**
@@ -28,8 +22,9 @@ static struct sockaddr_un client_sockaddr;
  */
 inline static int conn(const char *name)
 {
-    int client_sock, rc, len;
-
+    int client_sock, len;
+    struct sockaddr_un server_sockaddr;
+    struct sockaddr_un client_sockaddr;
     memset(&server_sockaddr, 0, sizeof(struct sockaddr_un));
     memset(&client_sockaddr, 0, sizeof(struct sockaddr_un));
 
@@ -53,7 +48,7 @@ inline static int conn(const char *name)
     len = sizeof(client_sockaddr);
 
     unlink(client_sockaddr.sun_path);
-    if ((bind(client_sock, (struct sockaddr *)&client_sockaddr, len)) == -1)
+    if (bind(client_sock, (struct sockaddr *)&client_sockaddr, len) < 0)
     {
         perror("BIND ERROR\n");
         close(client_sock);
@@ -67,8 +62,7 @@ inline static int conn(const char *name)
      */
     server_sockaddr.sun_family = AF_UNIX;
     strcpy(server_sockaddr.sun_path, name);
-    rc = connect(client_sock, (struct sockaddr *)&server_sockaddr, len);
-    if (rc == -1)
+    if (connect(client_sock, (struct sockaddr *)&server_sockaddr, len) < 0)
     {
         perror("CONNECT ERROR\n");
         close(client_sock);
@@ -88,33 +82,24 @@ inline static void disconn(int client_sock)
 int rpc_handler(const struct rpc_req_msg *req_msg,
                 struct rpc_rsp_msg *rsp_msg)
 {
-    int rc;
     int client_sock = conn(SERVER_PATH);
 
-    rc = send(client_sock, req_msg, sizeof(struct rpc_req_msg), 0);
-    if (rc == -1)
+    if (send(client_sock, req_msg, sizeof(struct rpc_req_msg), 0) < 0)
     {
         perror("SEND ERROR\n");
         close(client_sock);
         exit(1);
     }
-    else
-    {
-        printf("Data sent!\n");
-    }
+    printf("Data sent!\n");
 
     /* Read the data sent from the server and print it. */
-    rc = recv(client_sock, rsp_msg, sizeof(struct rpc_rsp_msg), 0);
-    if (rc == -1)
+    if (recv(client_sock, rsp_msg, sizeof(struct rpc_rsp_msg), 0) < 0)
     {
         perror("RECV ERROR\n");
         close(client_sock);
         exit(1);
     }
-    else
-    {
-        printf("DATA RECEIVED\n");
-    }
+    printf("DATA RECEIVED\n");
 
     /* Close the socket and exit. */
     disconn(client_sock);

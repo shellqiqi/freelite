@@ -7,68 +7,69 @@
 #include <sys/un.h>
 #include <pthread.h>
 
+#include "inc/func_code.h"
 #include "inc/rpc_types.h"
 
-#define SOCK_PATH SERVER_PATH
 #define SERVER_PATH "/var/tmp/tpf_unix_sock.server"
 
 void *server_accept_request(void *fd)
 {
-    int len, rc, bytes_rec;
+    int len;
     int client_sock = *((int *)fd);
-
+    struct rpc_req_msg req_msg;
+    struct rpc_rsp_msg rsp_msg;
     struct sockaddr_un client_sockaddr;
+    memset(&req_msg, 0, sizeof(struct rpc_req_msg));
+    memset(&rsp_msg, 0, sizeof(struct rpc_rsp_msg));
     memset(&client_sockaddr, 0, sizeof(struct sockaddr_un));
 
     /* Get the name of the connected socket */
     len = sizeof(client_sockaddr);
-    rc = getpeername(client_sock, (struct sockaddr *)&client_sockaddr, &len);
-    if (rc == -1)
+    if (getpeername(client_sock, (struct sockaddr *)&client_sockaddr, &len) < 0)
     {
         perror("GETPEERNAME ERROR\n");
         close(client_sock);
         pthread_exit(NULL);
     }
-    else
-    {
-        printf("Client socket filepath: %s\n", client_sockaddr.sun_path);
-    }
+    printf("Client socket filepath: %s\n", client_sockaddr.sun_path);
 
     /* Read and print the data incoming on the connected socket */
     printf("waiting to read...\n");
-    struct rpc_req_msg req_msg;
-    bytes_rec = recv(client_sock, &req_msg, sizeof(struct rpc_req_msg), 0);
-    if (bytes_rec == -1)
+    if (recv(client_sock, &req_msg, sizeof(struct rpc_req_msg), 0) < 0)
     {
         perror("RECV ERROR\n");
         close(client_sock);
         pthread_exit(NULL);
     }
-    else
+
+    printf("DATA RECEIVED\n");
+    printf("\tfunc_code: %d\n", req_msg.func_code);
+    switch (req_msg.func_code)
     {
-        printf("DATA RECEIVED\n");
-        printf("\tfunc_code: %d\n", req_msg.func_code);
-        printf("\teth_port: %d\n", req_msg.msg_body.join_req.eth_port);
-        printf("\tib_port: %d\n", req_msg.msg_body.join_req.ib_port);
-        printf("\tinput_str: %s\n", req_msg.msg_body.join_req.input_str);
+        case FUNC_userspace_liteapi_get_node_id:
+            rsp_msg.msg_body.int_rval = 12;
+            break;
+        case FUNC_userspace_liteapi_join:
+            printf("\teth_port: %d\n", req_msg.msg_body.join_req.eth_port);
+            printf("\tib_port: %d\n", req_msg.msg_body.join_req.ib_port);
+            printf("\tinput_str: %s\n", req_msg.msg_body.join_req.input_str);
+            rsp_msg.msg_body.int_rval = 12;
+            break;
+        default:
+            perror("UNKNOWN FUNC CODE\n");
+            close(client_sock);
+            pthread_exit(NULL);
     }
 
     /* Send data back to the connected socket */
-    struct rpc_rsp_msg rsp_msg = {
-        .msg_body.int_rval = 12
-    };
     printf("Sending data...\n");
-    rc = send(client_sock, &rsp_msg, sizeof(struct rpc_rsp_msg), 0);
-    if (rc == -1)
+    if (send(client_sock, &rsp_msg, sizeof(struct rpc_rsp_msg), 0) < 0)
     {
         printf("SEND ERROR\n");
         close(client_sock);
         pthread_exit(NULL);
     }
-    else
-    {
-        printf("Data sent!\n");
-    }
+    printf("Data sent!\n");
 
     /* Close the sockets and exit */
     close(client_sock);
@@ -77,17 +78,15 @@ void *server_accept_request(void *fd)
 
 int main(void)
 {
-    int server_sock, client_sock, len, rc;
-    int bytes_rec = 0;
+    int server_sock, client_sock, len;
     struct sockaddr_un server_sockaddr;
     struct sockaddr_un client_sockaddr;
-    char buf[256];
     int backlog = 10;
     memset(&server_sockaddr, 0, sizeof(struct sockaddr_un));
+    memset(&client_sockaddr, 0, sizeof(struct sockaddr_un));
 
     /* Create a UNIX domain stream socket */
-    server_sock = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (server_sock == -1)
+    if ((server_sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
     {
         perror("SOCKET ERROR\n");
         exit(1);
@@ -102,12 +101,11 @@ int main(void)
      * succeed, then bind to that file.
      */
     server_sockaddr.sun_family = AF_UNIX;
-    strcpy(server_sockaddr.sun_path, SOCK_PATH);
+    strcpy(server_sockaddr.sun_path, SERVER_PATH);
     len = sizeof(server_sockaddr);
 
-    unlink(SOCK_PATH);
-    rc = bind(server_sock, (struct sockaddr *)&server_sockaddr, len);
-    if (rc == -1)
+    unlink(SERVER_PATH);
+    if (bind(server_sock, (struct sockaddr *)&server_sockaddr, len) < 0)
     {
         perror("BIND ERROR\n");
         close(server_sock);
@@ -115,8 +113,7 @@ int main(void)
     }
 
     /* Listen for any client sockets */
-    rc = listen(server_sock, backlog);
-    if (rc == -1)
+    if (listen(server_sock, backlog) < 0)
     {
         perror("LISTEN ERROR\n");
         close(server_sock);
@@ -128,7 +125,7 @@ int main(void)
     while (1)
     {
         /* Accept an incoming connection */
-        if ((client_sock = accept(server_sock, (struct sockaddr *)&client_sockaddr, &len)) == -1)
+        if ((client_sock = accept(server_sock, (struct sockaddr *)&client_sockaddr, &len)) < 0)
         {
             perror("ACCEPT ERROR\n");
             close(server_sock);
@@ -138,6 +135,7 @@ int main(void)
         if (pthread_create(&pth, NULL, server_accept_request, &client_sock) < 0)
         {
             perror("THREAD CREATE ERROR\n");
+            exit(1);
         }
     }
 
