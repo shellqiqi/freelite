@@ -98,6 +98,12 @@ void *server_accept_request(void *fd)
             printf("  block_call: %d\n", req_msg.msg_body.receive_message_fast_req.block_call);
             rsp_msg.msg_body.int_rval = 512;
             break;
+        case FUNC_userspace_liteapi_reply_message:
+            printf("  port: %p\n", req_msg.msg_body.reply_message_req.addr);
+            printf("  ret_addr: %d\n", req_msg.msg_body.reply_message_req.size);
+            printf("  receive_size: %lu\n", req_msg.msg_body.reply_message_req.descriptor);
+            rsp_msg.msg_body.int_rval = -4;
+            break;
         default:
             perror("UNKNOWN FUNC CODE\n");
             close(client_sock);

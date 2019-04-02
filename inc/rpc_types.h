@@ -51,6 +51,13 @@ struct receive_message_fast_req_msg
     int block_call;
 };
 
+struct reply_message_req_msg
+{
+    void *addr;
+    int size;
+    uintptr_t descriptor;
+};
+
 /* RPC Request message */
 struct rpc_req_msg
 {
@@ -62,6 +69,7 @@ struct rpc_req_msg
         struct rdma_read_req_msg rdma_read_req;
         struct send_reply_imm_fast_req_msg send_reply_imm_fast_req;
         struct receive_message_fast_req_msg receive_message_fast_req;
+        struct reply_message_req_msg reply_message_req;
     } msg_body;
 };
 

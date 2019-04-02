@@ -196,3 +196,30 @@ int userspace_liteapi_receive_message_fast(unsigned int port,
     rpc_handler(&req_msg, &rsp_msg);
     return rsp_msg.msg_body.int_rval;
 }
+
+/**
+ * Processing a reply request in RPC from userspace
+ * Input:
+ *    addr: input address
+ *    size: reply size
+ *    descriptor: header of reply message (returned by lite_api_receive)
+ *    priority: priority of the request
+ * Return: Error code
+ */
+int userspace_liteapi_reply_message(void *addr,
+                                    int size,
+                                    uintptr_t descriptor)
+{
+    struct rpc_req_msg req_msg = {
+        .func_code = FUNC_userspace_liteapi_reply_message,
+        .msg_body.reply_message_req = {
+            .addr = addr,
+            .size = size,
+            .descriptor = descriptor
+        }
+    };
+    struct rpc_rsp_msg rsp_msg;
+
+    rpc_handler(&req_msg, &rsp_msg);
+    return rsp_msg.msg_body.int_rval;
+}
