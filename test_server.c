@@ -44,24 +44,32 @@ void *server_accept_request(void *fd)
     }
 
     printf("DATA RECEIVED\n");
-    printf("\tfunc_code: %d\n", req_msg.func_code);
+    printf("  func_code: %d\n", req_msg.func_code);
     switch (req_msg.func_code)
     {
         case FUNC_userspace_liteapi_get_node_id:
             rsp_msg.msg_body.int_rval = 12;
             break;
         case FUNC_userspace_liteapi_join:
-            printf("\teth_port: %d\n", req_msg.msg_body.join_req.eth_port);
-            printf("\tib_port: %d\n", req_msg.msg_body.join_req.ib_port);
-            printf("\tinput_str: %s\n", req_msg.msg_body.join_req.input_str);
+            printf("  eth_port: %d\n", req_msg.msg_body.join_req.eth_port);
+            printf("  ib_port: %d\n", req_msg.msg_body.join_req.ib_port);
+            printf("  input_str: %s\n", req_msg.msg_body.join_req.input_str);
             rsp_msg.msg_body.int_rval = 12;
             break;
         case FUNC_userspace_liteapi_alloc_remote_mem:
-            printf("\tnode_id: %d\n", req_msg.msg_body.alloc_remote_mem_req.node_id);
-            printf("\tsize: %d\n", req_msg.msg_body.alloc_remote_mem_req.size);
-            printf("\tatomic_flag: %d\n", req_msg.msg_body.alloc_remote_mem_req.atomic_flag);
-            printf("\tpassword: %d\n", req_msg.msg_body.alloc_remote_mem_req.password);
+            printf("  node_id: %d\n", req_msg.msg_body.alloc_remote_mem_req.node_id);
+            printf("  size: %d\n", req_msg.msg_body.alloc_remote_mem_req.size);
+            printf("  atomic_flag: %d\n", req_msg.msg_body.alloc_remote_mem_req.atomic_flag);
+            printf("  password: %d\n", req_msg.msg_body.alloc_remote_mem_req.password);
             rsp_msg.msg_body.int_rval = 13;
+            break;
+        case FUNC_userspace_liteapi_rdma_write:
+            printf("  lite_handler: %d\n", req_msg.msg_body.rdma_write_req.lite_handler);
+            printf("  local_addr: %p\n", req_msg.msg_body.rdma_write_req.local_addr);
+            printf("  size: %d\n", req_msg.msg_body.rdma_write_req.size);
+            printf("  offset: %d\n", req_msg.msg_body.rdma_write_req.offset);
+            printf("  password: %d\n", req_msg.msg_body.rdma_write_req.password);
+            rsp_msg.msg_body.int_rval = -1;
             break;
         default:
             perror("UNKNOWN FUNC CODE\n");

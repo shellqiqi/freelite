@@ -8,5 +8,7 @@ int main(int argc, char *argv[])
            userspace_liteapi_get_node_id());
     printf("userspace_liteapi_alloc_remote_mem: %d\n",
            userspace_liteapi_alloc_remote_mem(1, 1024, 1, 12345));
+    printf("userspace_liteapi_alloc_remote_mem: %d\n",
+           userspace_liteapi_rdma_write(1122, (void *) 0x77f, 1024, 256, 12345));
     return 0;
 }
