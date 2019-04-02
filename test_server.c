@@ -56,6 +56,13 @@ void *server_accept_request(void *fd)
             printf("\tinput_str: %s\n", req_msg.msg_body.join_req.input_str);
             rsp_msg.msg_body.int_rval = 12;
             break;
+        case FUNC_userspace_liteapi_alloc_remote_mem:
+            printf("\tnode_id: %d\n", req_msg.msg_body.alloc_remote_mem_req.node_id);
+            printf("\tsize: %d\n", req_msg.msg_body.alloc_remote_mem_req.size);
+            printf("\tatomic_flag: %d\n", req_msg.msg_body.alloc_remote_mem_req.atomic_flag);
+            printf("\tpassword: %d\n", req_msg.msg_body.alloc_remote_mem_req.password);
+            rsp_msg.msg_body.int_rval = 13;
+            break;
         default:
             perror("UNKNOWN FUNC CODE\n");
             close(client_sock);

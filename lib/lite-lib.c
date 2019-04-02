@@ -7,6 +7,7 @@ int userspace_liteapi_get_node_id()
         .func_code = FUNC_userspace_liteapi_get_node_id
     };
     struct rpc_rsp_msg rsp_msg;
+
     rpc_handler(&req_msg, &rsp_msg);
     return rsp_msg.msg_body.int_rval;
 }
@@ -22,17 +23,38 @@ int userspace_liteapi_join(char *input_str,
             .ib_port = ib_port
         }
     };
+    strncpy(req_msg.msg_body.join_req.input_str, input_str, strlen(input_str));
     struct rpc_rsp_msg rsp_msg;
 
-    strncpy(req_msg.msg_body.join_req.input_str, input_str, strlen(input_str));
     rpc_handler(&req_msg, &rsp_msg);
     return rsp_msg.msg_body.int_rval;
 }
 
+/**
+ * Alloc a memory space at the remote side as a LMR
+ * Input:
+ *    target_node: id of the remote node
+ *    size: requested size
+ *    atomic_flag: will this memory space be used for atomic operations?
+ *    password: pin code for this memory region
+ * Return: LMR Key or error code
+ */
 int userspace_liteapi_alloc_remote_mem(unsigned int node_id,
                                        unsigned int size,
                                        bool atomic_flag,
                                        int password)
 {
-    
+    struct rpc_req_msg req_msg = {
+        .func_code = FUNC_userspace_liteapi_alloc_remote_mem,
+        .msg_body.alloc_remote_mem_req = {
+            .node_id = node_id,
+            .size = size,
+            .atomic_flag = atomic_flag,
+            .password = password
+        }
+    };
+    struct rpc_rsp_msg rsp_msg;
+
+    rpc_handler(&req_msg, &rsp_msg);
+    return rsp_msg.msg_body.int_rval;
 }
