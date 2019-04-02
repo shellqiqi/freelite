@@ -71,6 +71,14 @@ void *server_accept_request(void *fd)
             printf("  password: %d\n", req_msg.msg_body.rdma_write_req.password);
             rsp_msg.msg_body.int_rval = -1;
             break;
+        case FUNC_userspace_liteapi_rdma_read:
+            printf("  lite_handler: %d\n", req_msg.msg_body.rdma_read_req.lite_handler);
+            printf("  local_addr: %p\n", req_msg.msg_body.rdma_read_req.local_addr);
+            printf("  size: %d\n", req_msg.msg_body.rdma_read_req.size);
+            printf("  offset: %d\n", req_msg.msg_body.rdma_read_req.offset);
+            printf("  password: %d\n", req_msg.msg_body.rdma_read_req.password);
+            rsp_msg.msg_body.int_rval = -2;
+            break;
         default:
             perror("UNKNOWN FUNC CODE\n");
             close(client_sock);

@@ -27,6 +27,8 @@ struct rdma_write_req_msg
     int password;
 };
 
+#define rdma_read_req_msg rdma_write_req_msg
+
 /* RPC Request message */
 struct rpc_req_msg
 {
@@ -35,6 +37,7 @@ struct rpc_req_msg
         struct join_req_msg join_req;
         struct alloc_remote_mem_req_msg alloc_remote_mem_req;
         struct rdma_write_req_msg rdma_write_req;
+        struct rdma_read_req_msg rdma_read_req;
     } msg_body;
 };
 

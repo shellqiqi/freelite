@@ -91,3 +91,36 @@ int userspace_liteapi_rdma_write(unsigned lite_handler,
     rpc_handler(&req_msg, &rsp_msg);
     return rsp_msg.msg_body.int_rval;
 }
+
+/**
+ * Processing read request from userspace
+ * Input:
+ *    lite_handler: lite_handler behind the targetted LMR
+ *    local_addr: input address
+ *    size: request size
+ *    priority: high, low, or non
+ *    offset: request offset
+ *    password: pin code of the lite_handler
+ * Return: Error of info code
+ */
+int userspace_liteapi_rdma_read(unsigned lite_handler,
+                                void *local_addr,
+                                unsigned int size,
+                                unsigned int offset,
+                                int password)
+{
+    struct rpc_req_msg req_msg = {
+        .func_code = FUNC_userspace_liteapi_rdma_read,
+        .msg_body.rdma_read_req = {
+            .lite_handler = lite_handler,
+            .local_addr = local_addr,
+            .size = size,
+            .offset = offset,
+            .password = password
+        }
+    };
+    struct rpc_rsp_msg rsp_msg;
+
+    rpc_handler(&req_msg, &rsp_msg);
+    return rsp_msg.msg_body.int_rval;
+}
