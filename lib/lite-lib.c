@@ -161,3 +161,38 @@ int userspace_liteapi_send_reply_imm_fast(int target_node,
     rpc_handler(&req_msg, &rsp_msg);
     return rsp_msg.msg_body.int_rval;
 }
+
+/**
+ * Processing a receive request (RPC-server) from userspace
+ * Input:
+ *    port: port
+ *    ret_addr: address to keep received message
+ *    receive_size: receive size
+ *    descriptor: address to keep the header/descriptor of the received message (for reply usage)
+ *    ret_length: keep the returned length of the message (for fast_receive)
+ *    block_call: flag to show whether this is a blocking call or not
+ * Return: length of received message
+ */
+int userspace_liteapi_receive_message_fast(unsigned int port,
+                                           void *ret_addr,
+                                           int receive_size,
+                                           uintptr_t *descriptor,
+                                           int *ret_length,
+                                           int block_call)
+{
+    struct rpc_req_msg req_msg = {
+        .func_code = FUNC_userspace_liteapi_receive_message_fast,
+        .msg_body.receive_message_fast_req = {
+            .port = port,
+            .ret_addr = ret_addr,
+            .receive_size = receive_size,
+            .descriptor = descriptor,
+            .ret_length = ret_length,
+            .block_call = block_call
+        }
+    };
+    struct rpc_rsp_msg rsp_msg;
+
+    rpc_handler(&req_msg, &rsp_msg);
+    return rsp_msg.msg_body.int_rval;
+}

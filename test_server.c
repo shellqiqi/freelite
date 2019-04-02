@@ -89,6 +89,15 @@ void *server_accept_request(void *fd)
             printf("  max_ret_size: %d\n", req_msg.msg_body.send_reply_imm_fast_req.max_ret_size);
             rsp_msg.msg_body.int_rval = 1024;
             break;
+        case FUNC_userspace_liteapi_receive_message_fast:
+            printf("  port: %d\n", req_msg.msg_body.receive_message_fast_req.port);
+            printf("  ret_addr: %p\n", req_msg.msg_body.receive_message_fast_req.ret_addr);
+            printf("  receive_size: %d\n", req_msg.msg_body.receive_message_fast_req.receive_size);
+            printf("  descriptor: %p\n", req_msg.msg_body.receive_message_fast_req.descriptor);
+            printf("  ret_length: %p\n", req_msg.msg_body.receive_message_fast_req.ret_length);
+            printf("  block_call: %d\n", req_msg.msg_body.receive_message_fast_req.block_call);
+            rsp_msg.msg_body.int_rval = 512;
+            break;
         default:
             perror("UNKNOWN FUNC CODE\n");
             close(client_sock);

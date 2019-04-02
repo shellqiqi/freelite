@@ -7,5 +7,6 @@
 #define FUNC_userspace_liteapi_rdma_write 4
 #define FUNC_userspace_liteapi_rdma_read 5
 #define FUNC_userspace_liteapi_send_reply_imm_fast 6
+#define FUNC_userspace_liteapi_receive_message_fast 7
 
 #endif
