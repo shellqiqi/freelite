@@ -6,5 +6,6 @@
 #define FUNC_userspace_liteapi_alloc_remote_mem 3
 #define FUNC_userspace_liteapi_rdma_write 4
 #define FUNC_userspace_liteapi_rdma_read 5
+#define FUNC_userspace_liteapi_send_reply_imm_fast 6
 
 #endif

@@ -124,3 +124,40 @@ int userspace_liteapi_rdma_read(unsigned lite_handler,
     rpc_handler(&req_msg, &rsp_msg);
     return rsp_msg.msg_body.int_rval;
 }
+
+/**
+ * Processing a send-reply request (RPC) from userspace
+ * Input:
+ *    target_node: target node id
+ *    port: the combination of size and port
+ *    addr: input address
+ *    ret_addr: address to keep received message
+ *    ret_length: keep the returned length of the message (for fast_receive)
+ *    max_ret_size: the combination of max_ret_size and priority
+ * Return: length of received message
+ */
+int userspace_liteapi_send_reply_imm_fast(int target_node,
+                                          unsigned int port,
+                                          void *addr,
+                                          int size,
+                                          void *ret_addr,
+                                          int *ret_length,
+                                          int max_ret_size)
+{
+    struct rpc_req_msg req_msg = {
+        .func_code = FUNC_userspace_liteapi_send_reply_imm_fast,
+        .msg_body.send_reply_imm_fast_req = {
+            .target_node = target_node,
+            .port = port,
+            .addr = addr,
+            .size = size,
+            .ret_addr = ret_addr,
+            .ret_length = ret_length,
+            .max_ret_size = max_ret_size
+        }
+    };
+    struct rpc_rsp_msg rsp_msg;
+
+    rpc_handler(&req_msg, &rsp_msg);
+    return rsp_msg.msg_body.int_rval;
+}

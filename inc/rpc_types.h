@@ -29,6 +29,17 @@ struct rdma_write_req_msg
 
 #define rdma_read_req_msg rdma_write_req_msg
 
+struct send_reply_imm_fast_req_msg
+{
+    int target_node;
+    unsigned int port;
+    void *addr;
+    int size;
+    void *ret_addr;
+    int *ret_length;
+    int max_ret_size;
+};
+
 /* RPC Request message */
 struct rpc_req_msg
 {
@@ -38,6 +49,7 @@ struct rpc_req_msg
         struct alloc_remote_mem_req_msg alloc_remote_mem_req;
         struct rdma_write_req_msg rdma_write_req;
         struct rdma_read_req_msg rdma_read_req;
+        struct send_reply_imm_fast_req_msg send_reply_imm_fast_req;
     } msg_body;
 };
 

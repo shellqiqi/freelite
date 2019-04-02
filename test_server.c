@@ -79,6 +79,16 @@ void *server_accept_request(void *fd)
             printf("  password: %d\n", req_msg.msg_body.rdma_read_req.password);
             rsp_msg.msg_body.int_rval = -2;
             break;
+        case FUNC_userspace_liteapi_send_reply_imm_fast:
+            printf("  target_node: %d\n", req_msg.msg_body.send_reply_imm_fast_req.target_node);
+            printf("  port: %d\n", req_msg.msg_body.send_reply_imm_fast_req.port);
+            printf("  addr: %p\n", req_msg.msg_body.send_reply_imm_fast_req.addr);
+            printf("  size: %d\n", req_msg.msg_body.send_reply_imm_fast_req.size);
+            printf("  ret_addr: %p\n", req_msg.msg_body.send_reply_imm_fast_req.ret_addr);
+            printf("  ret_length: %p\n", req_msg.msg_body.send_reply_imm_fast_req.ret_length);
+            printf("  max_ret_size: %d\n", req_msg.msg_body.send_reply_imm_fast_req.max_ret_size);
+            rsp_msg.msg_body.int_rval = 1024;
+            break;
         default:
             perror("UNKNOWN FUNC CODE\n");
             close(client_sock);
