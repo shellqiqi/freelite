@@ -255,3 +255,23 @@ int userspace_liteapi_register_application(unsigned int destined_port,
     rpc_handler(&req_msg, &rsp_msg);
     return rsp_msg.msg_body.int_rval;
 }
+
+/**
+ * Distributed barrier
+ * Input:
+ *    check_num: requested number of barrier message
+ * Return: Error code
+ */
+int userspace_liteapi_dist_barrier(unsigned int num)
+{
+    struct rpc_req_msg req_msg = {
+        .func_code = FUNC_userspace_liteapi_dist_barrier,
+        .msg_body.dist_barrier_req = {
+            .num = num
+        }
+    };
+    struct rpc_rsp_msg rsp_msg;
+
+    rpc_handler(&req_msg, &rsp_msg);
+    return rsp_msg.msg_body.int_rval;
+}

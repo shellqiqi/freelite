@@ -112,6 +112,10 @@ void *server_accept_request(void *fd)
             printf("  name_len: %lu\n", req_msg.msg_body.register_application_req.name_len);
             rsp_msg.msg_body.int_rval = -10;
             break;
+        case FUNC_userspace_liteapi_dist_barrier:
+            printf("  num: %d\n", req_msg.msg_body.dist_barrier_req.num);
+            rsp_msg.msg_body.int_rval = -7;
+            break;
         default:
             perror("UNKNOWN FUNC CODE\n");
             close(client_sock);

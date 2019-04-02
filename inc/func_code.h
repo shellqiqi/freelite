@@ -10,5 +10,6 @@
 #define FUNC_userspace_liteapi_receive_message_fast 7
 #define FUNC_userspace_liteapi_reply_message 8
 #define FUNC_userspace_liteapi_register_application 9
+#define FUNC_userspace_liteapi_dist_barrier 10
 
 #endif

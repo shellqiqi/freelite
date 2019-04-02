@@ -67,6 +67,11 @@ struct register_application_req_msg
     uint64_t name_len;
 };
 
+struct dist_barrier_req_msg
+{
+    unsigned int num;
+};
+
 /* RPC Request message */
 struct rpc_req_msg
 {
@@ -80,6 +85,7 @@ struct rpc_req_msg
         struct receive_message_fast_req_msg receive_message_fast_req;
         struct reply_message_req_msg reply_message_req;
         struct register_application_req_msg register_application_req;
+        struct dist_barrier_req_msg dist_barrier_req;
     } msg_body;
 };
 
