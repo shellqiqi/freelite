@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <pthread.h>
+#include <unistd.h>
 
 #include "inc/func_code.h"
 #include "inc/rpc_types.h"
@@ -14,7 +15,7 @@
 
 void *server_accept_request(void *fd)
 {
-    int len;
+    socklen_t len;
     int client_sock = *((int *)fd);
     struct rpc_req_msg req_msg;
     struct rpc_rsp_msg rsp_msg;
@@ -78,7 +79,8 @@ void *server_accept_request(void *fd)
 
 int main(void)
 {
-    int server_sock, client_sock, len;
+    int server_sock, client_sock;
+    socklen_t len;
     struct sockaddr_un server_sockaddr;
     struct sockaddr_un client_sockaddr;
     int backlog = 10;

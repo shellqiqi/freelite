@@ -28,3 +28,11 @@ int userspace_liteapi_join(char *input_str,
     rpc_handler(&req_msg, &rsp_msg);
     return rsp_msg.msg_body.int_rval;
 }
+
+int userspace_liteapi_alloc_remote_mem(unsigned int node_id,
+                                       unsigned int size,
+                                       bool atomic_flag,
+                                       int password)
+{
+    
+}
