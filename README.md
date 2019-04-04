@@ -1,5 +1,13 @@
 # Freelite
 
+## 容器间通信
+
+需要映射`/var/tmp/`
+
+```
+sudo docker run -v /var/tmp/:/var/tmp/ -it ubuntu:18.04 /bin/bash
+```
+
 ## 参数传递问题
 
 以下三个函数的参数意义不明确，特别是第二个函数参数中带有`uintptr_t *descriptor`，第三个中有`uintptr_t descriptor`
