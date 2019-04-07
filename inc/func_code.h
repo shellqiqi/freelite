@@ -12,5 +12,6 @@
 #define FUNC_userspace_liteapi_register_application 9
 #define FUNC_userspace_liteapi_dist_barrier 10
 #define FUNC_userspace_liteapi_query_port 11
+#define FUNC_userspace_liteapi_alloc_local_mem 12
 
 #endif

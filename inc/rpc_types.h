@@ -80,6 +80,11 @@ struct query_port_req_msg
     int designed_port;
 };
 
+struct alloc_local_mem_req_msg
+{
+    unsigned long size;
+};
+
 /* Response messages */
 
 /* None */
@@ -99,6 +104,7 @@ struct rpc_req_msg
         struct register_application_req_msg register_application_req;
         struct dist_barrier_req_msg dist_barrier_req;
         struct query_port_req_msg query_port_req;
+        struct alloc_local_mem_req_msg alloc_local_mem_req;
     } msg_body;
 };
 
@@ -107,6 +113,7 @@ struct rpc_rsp_msg
 {
     union {
         int int_rval;
+        void *void_ptr_rval;
     } msg_body;
 };
 

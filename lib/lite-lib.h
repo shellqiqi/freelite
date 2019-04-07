@@ -254,4 +254,6 @@ int userspace_liteapi_send(int target_node,
                            void *addr,
                            int size);
 
+void *userspace_liteapi_alloc_local_mem(unsigned long size);
+
 #endif /* LITE_LIB_H */

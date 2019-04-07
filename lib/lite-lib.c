@@ -311,3 +311,23 @@ int userspace_liteapi_query_port(int target_node,
     rpc_handler(&req_msg, &rsp_msg);
     return rsp_msg.msg_body.int_rval;
 }
+
+/**
+ * Alloc memory using shared memory with router
+ * Input:
+ *    size: memory size
+ */
+void *userspace_liteapi_alloc_local_mem(unsigned long size)
+{
+    //TODO: request shm to router and get response
+    struct rpc_req_msg req_msg = {
+        .func_code = FUNC_userspace_liteapi_alloc_local_mem,
+        .msg_body.alloc_local_mem_req = {
+            .size = size
+        }
+    };
+    struct rpc_rsp_msg rsp_msg;
+
+    rpc_handler(&req_msg, &rsp_msg);
+    return rsp_msg.msg_body.void_ptr_rval; // Not null
+}

@@ -24,5 +24,7 @@ int main(int argc, char *argv[])
            userspace_liteapi_dist_barrier(16));
     printf("userspace_liteapi_query_port: %d\n",
            userspace_liteapi_query_port(2, 1));
+    printf("userspace_liteapi_alloc_local_mem: %p\n",
+           userspace_liteapi_alloc_local_mem(512));
     return 0;
 }
