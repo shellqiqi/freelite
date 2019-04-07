@@ -70,7 +70,7 @@ void *server_accept_request(void *fd)
                                                                        req_msg.msg_body.alloc_remote_mem_req.atomic_flag,
                                                                        req_msg.msg_body.alloc_remote_mem_req.password);
         break;
-    case FUNC_userspace_liteapi_rdma_write:
+    case FUNC_userspace_liteapi_rdma_write: //TODO: the local_addr is alloced by router and passes to client?
         printf("  lite_handler: %d\n", req_msg.msg_body.rdma_write_req.lite_handler);
         printf("  local_addr: %p\n", req_msg.msg_body.rdma_write_req.local_addr);
         printf("  size: %d\n", req_msg.msg_body.rdma_write_req.size);
