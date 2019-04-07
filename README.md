@@ -1,10 +1,26 @@
 # Freelite
 
-## 运行环境
+## 运行Router
 
-先运行[freelite router](https://github.com/shellqiqi/freelite_router)
+启动cluster manager，挂载LITE内核模块
 
-容器需要映射`/var/tmp/`
+创建文件`seccomp_allow_all.json`允许所有系统调用，生产环境中不推荐这样做
+
+```
+{
+    "defaultAction": "SCMP_ACT_ALLOW"
+}
+```
+
+启动容器，容器间通信使用Unix domain socket，因此容器需要映射`/var/tmp/`，Router需要host模式的网络环境
+
+```
+sudo docker run --name lite_router --security-opt seccomp=path_to/seccomp_allow_all.json --net host -v /var/tmp/:/var/tmp/ -it ubuntu:18.04 /bin/bash
+```
+
+容器内运行freelite router
+
+## 运行Client
 
 ```
 sudo docker run --name lite_client_0 -v /var/tmp/:/var/tmp/ -it ubuntu:18.04 /bin/bash
@@ -12,7 +28,13 @@ sudo docker run --name lite_client_0 -v /var/tmp/:/var/tmp/ -it ubuntu:18.04 /bi
 
 容器内运行freelite应用程序
 
-## 参数传递问题
+## 问题
+
+### Router与用户程序的内存管理
+
+添加函数`userspace_liteapi_alloc_local_mem`，将用户需要的内存与Router分配的内存建立映射
+
+### 参数传递问题
 
 以下三个函数的参数意义不明确，特别是第二个函数参数中带有`uintptr_t *descriptor`，第三个中有`uintptr_t descriptor`
 
