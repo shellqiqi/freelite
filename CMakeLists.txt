@@ -6,4 +6,5 @@ find_package(Threads REQUIRED)
 
 INCLUDE_DIRECTORIES(inc)
 ADD_SUBDIRECTORY(client)
+ADD_SUBDIRECTORY(router)
 

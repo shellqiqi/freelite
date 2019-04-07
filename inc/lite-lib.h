@@ -27,6 +27,36 @@
 
 #include "rpc_types.h"
 #include "func_code.h"
+#include "compiler.h"
+
+#define __NR_lite_remote_memset 400
+#define __NR_lite_fetch_add 401
+#define __NR_lite_rdma_synwrite 402
+#define __NR_lite_rdma_read 403
+#define __NR_lite_ask_lmr 404
+#define __NR_lite_rdma_asywrite 405
+#define __NR_lite_dist_barrier 406
+#define __NR_lite_add_ask_mr_table 407
+#define __NR_lite_compare_swp 408
+#define __NR_lite_alloc_remote 409
+#define __NR_lite_umap_lmr 410
+#define __NR_lite_register_application 411
+#define __NR_lite_unregister_application 412
+#define __NR_lite_receive_message 413
+#define __NR_lite_send_reply_imm 414
+#define __NR_lite_reply_message 415
+#define __NR_lite_get_node_id 416
+#define __NR_lite_query_port 417
+#define __NR_lite_alloc_continuous_memory 418
+#define __NR_lite_wrap_alloc_for_remote_access 419
+#define __NR_lite_create_lock 420
+#define __NR_lite_ask_lock 421
+#define __NR_lite_lock 422
+#define __NR_lite_unlock 423
+#define __NR_lite_get_total_node 424
+#define __NR_lite_reply_and_receive_message 425
+#define __NR_lite_join 426
+#define __NR_lite_rdma_read_async 427
 
 #define max(x, y)      \
     ({                 \
