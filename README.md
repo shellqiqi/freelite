@@ -1,12 +1,16 @@
 # Freelite
 
-## 容器间通信
+## 运行环境
 
-需要映射`/var/tmp/`
+先运行[freelite router](https://github.com/shellqiqi/freelite_router)
+
+容器需要映射`/var/tmp/`
 
 ```
 sudo docker run --name lite_client_0 -v /var/tmp/:/var/tmp/ -it ubuntu:18.04 /bin/bash
 ```
+
+容器内运行freelite应用程序
 
 ## 参数传递问题
 
