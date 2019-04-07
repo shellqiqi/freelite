@@ -7,8 +7,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _LASTWEEK_USER_COMPILER_H_
-#define _LASTWEEK_USER_COMPILER_H_
+#ifndef _FREELITE_USER_COMPILER_H_
+#define _FREELITE_USER_COMPILER_H_
 
 #include <assert.h>
 

@@ -132,6 +132,10 @@ void *server_accept_request(void *fd)
         printf("  designed_port: %d\n", req_msg.msg_body.query_port_req.designed_port);
         rsp_msg.msg_body.int_rval = -9;
         break;
+    case FUNC_userspace_liteapi_alloc_local_mem:
+        printf("  size: %lu\n", req_msg.msg_body.alloc_local_mem_req.size);
+        rsp_msg.msg_body.void_ptr_rval = (void *) 0x120;
+        break;
     default:
         perror("UNKNOWN FUNC CODE\n");
         close(client_sock);

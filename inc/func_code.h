@@ -1,5 +1,5 @@
-#ifndef FUNC_CODE_h
-#define FUNC_CODE_h
+#ifndef FUNC_CODE_H
+#define FUNC_CODE_H
 
 #define FUNC_userspace_liteapi_get_node_id 1
 #define FUNC_userspace_liteapi_join 2

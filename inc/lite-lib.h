@@ -25,10 +25,6 @@
 #include <pthread.h>
 #include <time.h>
 
-#include "rpc_types.h"
-#include "func_code.h"
-#include "compiler.h"
-
 #define __NR_lite_remote_memset 400
 #define __NR_lite_fetch_add 401
 #define __NR_lite_rdma_synwrite 402
