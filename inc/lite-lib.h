@@ -1,7 +1,10 @@
 #ifndef LITE_LIB_H
 #define LITE_LIB_H
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/syscall.h>
@@ -22,8 +25,8 @@
 #include <pthread.h>
 #include <time.h>
 
-#include "../inc/rpc_types.h"
-#include "../inc/func_code.h"
+#include "rpc_types.h"
+#include "func_code.h"
 
 #define max(x, y)      \
     ({                 \

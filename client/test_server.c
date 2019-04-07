@@ -8,8 +8,8 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#include "inc/func_code.h"
-#include "inc/rpc_types.h"
+#include "func_code.h"
+#include "rpc_types.h"
 
 #define SERVER_PATH "/var/tmp/tpf_unix_sock.server"
 
