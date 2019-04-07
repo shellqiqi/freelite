@@ -5,7 +5,7 @@
 需要映射`/var/tmp/`
 
 ```
-sudo docker run -v /var/tmp/:/var/tmp/ -it ubuntu:18.04 /bin/bash
+sudo docker run --name lite_client_0 -v /var/tmp/:/var/tmp/ -it ubuntu:18.04 /bin/bash
 ```
 
 ## 参数传递问题
