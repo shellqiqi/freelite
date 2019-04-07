@@ -1,7 +1,4 @@
-#include "lite-lib.h"
-#include <sys/syscall.h>
-#include <linux/unistd.h>
-#include <asm/unistd.h>
+#include "../../inc/lite-lib.h"
 
 /* liteapi_dist_barrier */
 inline int userspace_liteapi_dist_barrier(unsigned int num)

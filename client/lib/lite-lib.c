@@ -1,4 +1,4 @@
-#include "lite-lib.h"
+#include "../../inc/lite-lib.h"
 #include "rpc.h"
 
 /**
@@ -13,7 +13,7 @@ int userspace_liteapi_get_node_id()
     struct rpc_rsp_msg rsp_msg;
 
     rpc_handler(&req_msg, &rsp_msg);
-    return rsp_msg.msg_body.int_rval;
+    return rsp_msg.rval.int_rsp;
 }
 
 /**
@@ -39,7 +39,7 @@ int userspace_liteapi_join(char *input_str,
     struct rpc_rsp_msg rsp_msg;
 
     rpc_handler(&req_msg, &rsp_msg);
-    return rsp_msg.msg_body.int_rval;
+    return rsp_msg.rval.int_rsp;
 }
 
 /**
@@ -68,7 +68,7 @@ int userspace_liteapi_alloc_remote_mem(unsigned int node_id,
     struct rpc_rsp_msg rsp_msg;
 
     rpc_handler(&req_msg, &rsp_msg);
-    return rsp_msg.msg_body.int_rval;
+    return rsp_msg.rval.int_rsp;
 }
 
 /**
@@ -101,7 +101,7 @@ int userspace_liteapi_rdma_write(unsigned lite_handler,
     struct rpc_rsp_msg rsp_msg;
 
     rpc_handler(&req_msg, &rsp_msg);
-    return rsp_msg.msg_body.int_rval;
+    return rsp_msg.rval.int_rsp;
 }
 
 /**
@@ -134,7 +134,7 @@ int userspace_liteapi_rdma_read(unsigned lite_handler,
     struct rpc_rsp_msg rsp_msg;
 
     rpc_handler(&req_msg, &rsp_msg);
-    return rsp_msg.msg_body.int_rval;
+    return rsp_msg.rval.int_rsp;
 }
 
 /**
@@ -171,7 +171,7 @@ int userspace_liteapi_send_reply_imm_fast(int target_node,
     struct rpc_rsp_msg rsp_msg;
 
     rpc_handler(&req_msg, &rsp_msg);
-    return rsp_msg.msg_body.int_rval;
+    return rsp_msg.rval.int_rsp;
 }
 
 /**
@@ -206,7 +206,7 @@ int userspace_liteapi_receive_message_fast(unsigned int port,
     struct rpc_rsp_msg rsp_msg;
 
     rpc_handler(&req_msg, &rsp_msg);
-    return rsp_msg.msg_body.int_rval;
+    return rsp_msg.rval.int_rsp;
 }
 
 /**
@@ -233,7 +233,7 @@ int userspace_liteapi_reply_message(void *addr,
     struct rpc_rsp_msg rsp_msg;
 
     rpc_handler(&req_msg, &rsp_msg);
-    return rsp_msg.msg_body.int_rval;
+    return rsp_msg.rval.int_rsp;
 }
 
 /**
@@ -265,7 +265,7 @@ int userspace_liteapi_register_application(unsigned int destined_port,
     struct rpc_rsp_msg rsp_msg;
 
     rpc_handler(&req_msg, &rsp_msg);
-    return rsp_msg.msg_body.int_rval;
+    return rsp_msg.rval.int_rsp;
 }
 
 /**
@@ -285,7 +285,7 @@ int userspace_liteapi_dist_barrier(unsigned int num)
     struct rpc_rsp_msg rsp_msg;
 
     rpc_handler(&req_msg, &rsp_msg);
-    return rsp_msg.msg_body.int_rval;
+    return rsp_msg.rval.int_rsp;
 }
 
 /**
@@ -309,25 +309,63 @@ int userspace_liteapi_query_port(int target_node,
     struct rpc_rsp_msg rsp_msg;
 
     rpc_handler(&req_msg, &rsp_msg);
-    return rsp_msg.msg_body.int_rval;
+    return rsp_msg.rval.int_rsp;
 }
 
 /**
- * Alloc memory using shared memory with router
+ * Alloc shared memory in router
  * Input:
- *    size: memory size
+ *    name: shared memory name
+ *    size: shared memory size
+ * Output:
+ *    local_addr: address of client. Handle LOCALLY!
+ *    remote_addr: address alloced in router process space
+ *                 for release operation
+ * Return: error code.
  */
-void *userspace_liteapi_alloc_local_mem(unsigned long size)
+int userspace_liteapi_alloc_local_mem(const char *name,
+                                      const size_t size,
+                                      void *local_addr,
+                                      void *remote_addr)
 {
-    //TODO: request shm to router and get response
     struct rpc_req_msg req_msg = {
         .func_code = FUNC_userspace_liteapi_alloc_local_mem,
         .msg_body.alloc_local_mem_req = {
             .size = size
         }
     };
+    strncpy(req_msg.msg_body.alloc_local_mem_req.name, name, strlen(name));
     struct rpc_rsp_msg rsp_msg;
 
     rpc_handler(&req_msg, &rsp_msg);
-    return rsp_msg.msg_body.void_ptr_rval; // Not null
+    *((uintptr_t *)local_addr) = (uintptr_t)0x900;
+    *((uintptr_t *)remote_addr) = (uintptr_t)rsp_msg.msg_body.alloc_local_mem_rsp.remote_addr;
+    return rsp_msg.rval.int_rsp;
+}
+
+/**
+ * Free shared memory in router
+ * Input:
+ *    name: shared memory name
+ *    size: shared memory size
+ *    local_addr: address of client. Handle LOCALLY!
+ *    remote_addr: address of router
+ */
+int userspace_liteapi_free_local_mem(const char *name,
+                                     size_t size,
+                                     void *local_addr,
+                                     void *remote_addr)
+{
+    struct rpc_req_msg req_msg = {
+        .func_code = FUNC_userspace_liteapi_free_local_mem,
+        .msg_body.free_local_mem_req = {
+            .size = size,
+            .remote_addr = remote_addr
+        }
+    };
+    strncpy(req_msg.msg_body.free_local_mem_req.name, name, strlen(name));
+    struct rpc_rsp_msg rsp_msg;
+
+    rpc_handler(&req_msg, &rsp_msg);
+    return rsp_msg.rval.int_rsp;
 }

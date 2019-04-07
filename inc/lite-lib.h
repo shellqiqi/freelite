@@ -5,18 +5,18 @@
 #define _GNU_SOURCE
 #endif
 
+#include <linux/unistd.h>
+#include <asm/unistd.h>
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/syscall.h>
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <sys/time.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <malloc.h>
-#include <sys/mman.h>
-#include <sys/time.h>
-#include <sys/syscall.h>
-#include <linux/unistd.h>
 
 #include <fcntl.h>
 #include <errno.h>
@@ -283,6 +283,13 @@ int userspace_liteapi_send(int target_node,
                            void *addr,
                            int size);
 
-void *userspace_liteapi_alloc_local_mem(unsigned long size);
+int userspace_liteapi_alloc_local_mem(const char *name,
+                                      const size_t size,
+                                      void *local_addr,
+                                      void *remote_addr);
+int userspace_liteapi_free_local_mem(const char *name,
+                                     size_t size,
+                                     void *local_addr,
+                                     void *remote_addr);
 
 #endif /* LITE_LIB_H */

@@ -8,10 +8,10 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#include "func_code.h"
-#include "rpc_types.h"
+#include "../inc/func_code.h"
+#include "../inc/rpc_types.h"
 
-#include "lite-lib.h"
+#include "../inc/lite-lib.h"
 
 #define SERVER_PATH "/var/tmp/tpf_unix_sock.server"
 
@@ -50,25 +50,25 @@ void *server_accept_request(void *fd)
     switch (req_msg.func_code)
     {
     case FUNC_userspace_liteapi_get_node_id:
-        rsp_msg.msg_body.int_rval = userspace_liteapi_get_node_id();
+        rsp_msg.rval.int_rsp = userspace_liteapi_get_node_id();
         break;
     case FUNC_userspace_liteapi_join:
         printf("  eth_port: %d\n", req_msg.msg_body.join_req.eth_port);
         printf("  ib_port: %d\n", req_msg.msg_body.join_req.ib_port);
         printf("  input_str: %s\n", req_msg.msg_body.join_req.input_str);
-        rsp_msg.msg_body.int_rval = userspace_liteapi_join(req_msg.msg_body.join_req.input_str,
-                                                           req_msg.msg_body.join_req.eth_port,
-                                                           req_msg.msg_body.join_req.ib_port);
+        rsp_msg.rval.int_rsp = userspace_liteapi_join(req_msg.msg_body.join_req.input_str,
+                                                      req_msg.msg_body.join_req.eth_port,
+                                                      req_msg.msg_body.join_req.ib_port);
         break;
     case FUNC_userspace_liteapi_alloc_remote_mem:
         printf("  node_id: %d\n", req_msg.msg_body.alloc_remote_mem_req.node_id);
         printf("  size: %d\n", req_msg.msg_body.alloc_remote_mem_req.size);
         printf("  atomic_flag: %d\n", req_msg.msg_body.alloc_remote_mem_req.atomic_flag);
         printf("  password: %d\n", req_msg.msg_body.alloc_remote_mem_req.password);
-        rsp_msg.msg_body.int_rval = userspace_liteapi_alloc_remote_mem(req_msg.msg_body.alloc_remote_mem_req.node_id,
-                                                                       req_msg.msg_body.alloc_remote_mem_req.size,
-                                                                       req_msg.msg_body.alloc_remote_mem_req.atomic_flag,
-                                                                       req_msg.msg_body.alloc_remote_mem_req.password);
+        rsp_msg.rval.int_rsp = userspace_liteapi_alloc_remote_mem(req_msg.msg_body.alloc_remote_mem_req.node_id,
+                                                                  req_msg.msg_body.alloc_remote_mem_req.size,
+                                                                  req_msg.msg_body.alloc_remote_mem_req.atomic_flag,
+                                                                  req_msg.msg_body.alloc_remote_mem_req.password);
         break;
     case FUNC_userspace_liteapi_rdma_write: //TODO: the local_addr is alloced by router and passes to client?
         printf("  lite_handler: %d\n", req_msg.msg_body.rdma_write_req.lite_handler);
@@ -76,11 +76,11 @@ void *server_accept_request(void *fd)
         printf("  size: %d\n", req_msg.msg_body.rdma_write_req.size);
         printf("  offset: %d\n", req_msg.msg_body.rdma_write_req.offset);
         printf("  password: %d\n", req_msg.msg_body.rdma_write_req.password);
-        rsp_msg.msg_body.int_rval = userspace_liteapi_rdma_write(req_msg.msg_body.rdma_write_req.lite_handler,
-                                                                 req_msg.msg_body.rdma_write_req.local_addr,
-                                                                 req_msg.msg_body.rdma_write_req.size,
-                                                                 req_msg.msg_body.rdma_write_req.offset,
-                                                                 req_msg.msg_body.rdma_write_req.password);
+        rsp_msg.rval.int_rsp = userspace_liteapi_rdma_write(req_msg.msg_body.rdma_write_req.lite_handler,
+                                                            req_msg.msg_body.rdma_write_req.local_addr,
+                                                            req_msg.msg_body.rdma_write_req.size,
+                                                            req_msg.msg_body.rdma_write_req.offset,
+                                                            req_msg.msg_body.rdma_write_req.password);
         break;
     case FUNC_userspace_liteapi_rdma_read:
         printf("  lite_handler: %d\n", req_msg.msg_body.rdma_read_req.lite_handler);
@@ -88,7 +88,7 @@ void *server_accept_request(void *fd)
         printf("  size: %d\n", req_msg.msg_body.rdma_read_req.size);
         printf("  offset: %d\n", req_msg.msg_body.rdma_read_req.offset);
         printf("  password: %d\n", req_msg.msg_body.rdma_read_req.password);
-        rsp_msg.msg_body.int_rval = -2;
+        rsp_msg.rval.int_rsp = -2;
         break;
     case FUNC_userspace_liteapi_send_reply_imm_fast:
         printf("  target_node: %d\n", req_msg.msg_body.send_reply_imm_fast_req.target_node);
@@ -98,7 +98,7 @@ void *server_accept_request(void *fd)
         printf("  ret_addr: %p\n", req_msg.msg_body.send_reply_imm_fast_req.ret_addr);
         printf("  ret_length: %p\n", req_msg.msg_body.send_reply_imm_fast_req.ret_length);
         printf("  max_ret_size: %d\n", req_msg.msg_body.send_reply_imm_fast_req.max_ret_size);
-        rsp_msg.msg_body.int_rval = 1024;
+        rsp_msg.rval.int_rsp = 1024;
         break;
     case FUNC_userspace_liteapi_receive_message_fast:
         printf("  port: %d\n", req_msg.msg_body.receive_message_fast_req.port);
@@ -107,13 +107,13 @@ void *server_accept_request(void *fd)
         printf("  descriptor: %p\n", req_msg.msg_body.receive_message_fast_req.descriptor);
         printf("  ret_length: %p\n", req_msg.msg_body.receive_message_fast_req.ret_length);
         printf("  block_call: %d\n", req_msg.msg_body.receive_message_fast_req.block_call);
-        rsp_msg.msg_body.int_rval = 512;
+        rsp_msg.rval.int_rsp = 512;
         break;
     case FUNC_userspace_liteapi_reply_message:
         printf("  port: %p\n", req_msg.msg_body.reply_message_req.addr);
         printf("  ret_addr: %d\n", req_msg.msg_body.reply_message_req.size);
         printf("  receive_size: %lu\n", req_msg.msg_body.reply_message_req.descriptor);
-        rsp_msg.msg_body.int_rval = -4;
+        rsp_msg.rval.int_rsp = -4;
         break;
     case FUNC_userspace_liteapi_register_application:
         printf("  destined_port: %d\n", req_msg.msg_body.register_application_req.destined_port);
@@ -121,20 +121,28 @@ void *server_accept_request(void *fd)
         printf("  max_user_per_node: %d\n", req_msg.msg_body.register_application_req.max_user_per_node);
         printf("  name: %s\n", req_msg.msg_body.register_application_req.name);
         printf("  name_len: %lu\n", req_msg.msg_body.register_application_req.name_len);
-        rsp_msg.msg_body.int_rval = -10;
+        rsp_msg.rval.int_rsp = -10;
         break;
     case FUNC_userspace_liteapi_dist_barrier:
         printf("  num: %d\n", req_msg.msg_body.dist_barrier_req.num);
-        rsp_msg.msg_body.int_rval = -7;
+        rsp_msg.rval.int_rsp = -7;
         break;
     case FUNC_userspace_liteapi_query_port:
         printf("  target_node: %d\n", req_msg.msg_body.query_port_req.target_node);
         printf("  designed_port: %d\n", req_msg.msg_body.query_port_req.designed_port);
-        rsp_msg.msg_body.int_rval = -9;
+        rsp_msg.rval.int_rsp = -9;
         break;
     case FUNC_userspace_liteapi_alloc_local_mem:
+        printf("  name: %s\n", req_msg.msg_body.alloc_local_mem_req.name);
         printf("  size: %lu\n", req_msg.msg_body.alloc_local_mem_req.size);
-        rsp_msg.msg_body.void_ptr_rval = (void *) 0x120;
+        rsp_msg.msg_body.alloc_local_mem_rsp.remote_addr = (void *)0x100;
+        rsp_msg.rval.int_rsp = 0;
+        break;
+    case FUNC_userspace_liteapi_free_local_mem:
+        printf("  name: %s\n", req_msg.msg_body.free_local_mem_req.name);
+        printf("  size: %lu\n", req_msg.msg_body.free_local_mem_req.size);
+        printf("  remote_addr: %p\n", req_msg.msg_body.free_local_mem_req.remote_addr);
+        rsp_msg.rval.int_rsp = -1;
         break;
     default:
         perror("UNKNOWN FUNC CODE\n");

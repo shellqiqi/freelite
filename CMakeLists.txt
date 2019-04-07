@@ -4,7 +4,6 @@ project(freelite VERSION 0.1.0)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-INCLUDE_DIRECTORIES(inc)
 ADD_SUBDIRECTORY(client)
 ADD_SUBDIRECTORY(router)
 

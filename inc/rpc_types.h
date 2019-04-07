@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 /* Request messages */
 
@@ -82,12 +83,23 @@ struct query_port_req_msg
 
 struct alloc_local_mem_req_msg
 {
-    unsigned long size;
+    char name[256];
+    size_t size;
+};
+
+struct free_local_mem_req_msg
+{
+    char name[256];
+    size_t size;
+    void *remote_addr;
 };
 
 /* Response messages */
 
-/* None */
+struct alloc_local_mem_rsp_msg
+{
+    void *remote_addr;
+};
 
 /* RPC Request message */
 struct rpc_req_msg
@@ -105,6 +117,7 @@ struct rpc_req_msg
         struct dist_barrier_req_msg dist_barrier_req;
         struct query_port_req_msg query_port_req;
         struct alloc_local_mem_req_msg alloc_local_mem_req;
+        struct free_local_mem_req_msg free_local_mem_req;
     } msg_body;
 };
 
@@ -112,8 +125,10 @@ struct rpc_req_msg
 struct rpc_rsp_msg
 {
     union {
-        int int_rval;
-        void *void_ptr_rval;
+        int int_rsp;
+    } rval;
+    union {
+        struct alloc_local_mem_rsp_msg alloc_local_mem_rsp;
     } msg_body;
 };
 
