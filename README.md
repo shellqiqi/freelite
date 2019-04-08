@@ -12,10 +12,14 @@
 }
 ```
 
-启动容器，容器间通信使用Unix domain socket，因此容器需要映射`/var/tmp/`，Router需要host模式的网络环境
+启动容器
+
+容器间通信使用Unix domain socket，因此容器需要映射`/var/tmp/`  
+Router需要host模式的网络环境  
+容器使用shm让Client与Router共享内存，因此容器需要挂在`/dev/shm/`
 
 ```
-sudo docker run --name lite_router --security-opt seccomp=path_to/seccomp_allow_all.json --net host -v /var/tmp/:/var/tmp/ -it ubuntu:18.04 /bin/bash
+sudo docker run --name lite_router --security-opt seccomp=path_to/seccomp_allow_all.json --net host -v /var/tmp/:/var/tmp/ -v /dev/shm/:/dev/shm/ -it ubuntu:18.04 /bin/bash
 ```
 
 容器内运行freelite router
@@ -23,7 +27,7 @@ sudo docker run --name lite_router --security-opt seccomp=path_to/seccomp_allow_
 ## 运行Client
 
 ```
-sudo docker run --name lite_client_0 -v /var/tmp/:/var/tmp/ -it ubuntu:18.04 /bin/bash
+sudo docker run --name lite_client_0 -v /var/tmp/:/var/tmp/ -v /dev/shm/:/dev/shm/ -it ubuntu:18.04 /bin/bash
 ```
 
 容器内运行freelite应用程序
