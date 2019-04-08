@@ -9,7 +9,7 @@
 
 int alloc_shm_mem(const char *name,
                   const size_t size,
-                  void *addr);
+                  void **addr);
 
 int free_shm_mem(const char *name,
                  size_t size,

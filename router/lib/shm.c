@@ -2,11 +2,11 @@
 
 int alloc_shm_mem(const char *name,
                   const size_t size,
-                  void *addr)
+                  void **addr)
 {
     int fd;
 
-    if ((fd = shm_open(name, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR)) < 0) //TODO: Alloc shm with unique random name
+    if ((fd = shm_open(name, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR)) < 0)
     {
         perror("SHM OPEN ERROR\n");
         return -1;
@@ -18,8 +18,8 @@ int alloc_shm_mem(const char *name,
         return -1;
     }
 
-    addr = mmap(NULL, size, PROT_WRITE | PROT_READ, MAP_SHARED, fd, 0);
-    if (addr == MAP_FAILED)
+    *addr = mmap(NULL, size, PROT_WRITE | PROT_READ, MAP_SHARED, fd, 0);
+    if (*addr == MAP_FAILED)
     {
         perror("MMAP FAILED\n");
         return -1;

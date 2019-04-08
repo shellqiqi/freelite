@@ -26,8 +26,8 @@ int main(int argc, char *argv[])
            userspace_liteapi_query_port(2, 1));
     int val;
     void *local_addr = NULL, *remote_addr = NULL;
-    val = userspace_liteapi_alloc_local_mem("SHMALLOC", 1024, &local_addr, &remote_addr);
-    printf("userspace_liteapi_alloc_local_mem: %d, %p, %p\n", val, local_addr, remote_addr);
+    val = userspace_liteapi_alloc_local_mem_test("SHMALLOC", 1024, &local_addr, &remote_addr);
+    printf("userspace_liteapi_alloc_local_mem_test: %d, %p, %p\n", val, local_addr, remote_addr);
     printf("userspace_liteapi_free_local_mem: %d\n",
            userspace_liteapi_free_local_mem("SHMFREE", 2048, local_addr, remote_addr));
     return 0;

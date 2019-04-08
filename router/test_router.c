@@ -10,8 +10,9 @@
 
 #include "../inc/func_code.h"
 #include "../inc/rpc_types.h"
-
 #include "../inc/lite-lib.h"
+
+#include "lib/shm.h"
 
 #define SERVER_PATH "/var/tmp/tpf_unix_sock.server"
 
@@ -135,14 +136,17 @@ void *server_accept_request(void *fd)
     case FUNC_userspace_liteapi_alloc_local_mem:
         printf("  name: %s\n", req_msg.msg_body.alloc_local_mem_req.name);
         printf("  size: %lu\n", req_msg.msg_body.alloc_local_mem_req.size);
-        rsp_msg.msg_body.alloc_local_mem_rsp.remote_addr = (void *)0x100;
-        rsp_msg.rval.int_rsp = 0;
+        rsp_msg.rval.int_rsp = alloc_shm_mem(req_msg.msg_body.alloc_local_mem_req.name,
+                                             req_msg.msg_body.alloc_local_mem_req.size,
+                                             &rsp_msg.msg_body.alloc_local_mem_rsp.remote_addr);
         break;
     case FUNC_userspace_liteapi_free_local_mem:
         printf("  name: %s\n", req_msg.msg_body.free_local_mem_req.name);
         printf("  size: %lu\n", req_msg.msg_body.free_local_mem_req.size);
         printf("  remote_addr: %p\n", req_msg.msg_body.free_local_mem_req.remote_addr);
-        rsp_msg.rval.int_rsp = -1;
+        rsp_msg.rval.int_rsp = free_shm_mem(req_msg.msg_body.free_local_mem_req.name,
+                                            req_msg.msg_body.free_local_mem_req.size,
+                                            req_msg.msg_body.free_local_mem_req.remote_addr);
         break;
     default:
         perror("UNKNOWN FUNC CODE\n");

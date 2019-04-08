@@ -323,10 +323,10 @@ int userspace_liteapi_query_port(int target_node,
  *                 for release operation
  * Return: error code.
  */
-int userspace_liteapi_alloc_local_mem(const char *name,
-                                      const size_t size,
-                                      void *local_addr,
-                                      void *remote_addr)
+int userspace_liteapi_alloc_local_mem_test(const char *name,
+                                           const size_t size,
+                                           void **local_addr,
+                                           void **remote_addr)
 {
     struct rpc_req_msg req_msg = {
         .func_code = FUNC_userspace_liteapi_alloc_local_mem,
@@ -338,8 +338,40 @@ int userspace_liteapi_alloc_local_mem(const char *name,
     struct rpc_rsp_msg rsp_msg;
 
     rpc_handler(&req_msg, &rsp_msg);
-    *((uintptr_t *)local_addr) = (uintptr_t)0x900;
-    *((uintptr_t *)remote_addr) = (uintptr_t)rsp_msg.msg_body.alloc_local_mem_rsp.remote_addr;
+    *local_addr = (void *)0x900;
+    *remote_addr = rsp_msg.msg_body.alloc_local_mem_rsp.remote_addr;
+    return rsp_msg.rval.int_rsp;
+}
+
+int userspace_liteapi_alloc_local_mem(const char *name,
+                                      const size_t size,
+                                      void **local_addr,
+                                      void **remote_addr)
+{
+    int fd;
+    struct rpc_req_msg req_msg = {
+        .func_code = FUNC_userspace_liteapi_alloc_local_mem,
+        .msg_body.alloc_local_mem_req = {
+            .size = size
+        }
+    };
+    strncpy(req_msg.msg_body.alloc_local_mem_req.name, name, strlen(name));
+    struct rpc_rsp_msg rsp_msg;
+
+    rpc_handler(&req_msg, &rsp_msg);
+    if (rsp_msg.rval.int_rsp < 0) return -1;
+    if ((fd = shm_open(name, O_RDWR, S_IRUSR | S_IWUSR)) < 0)
+    {
+        perror("SHM OPEN ERROR\n");
+        return -1;
+    }
+    *local_addr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (local_addr == MAP_FAILED)
+    {
+        perror("SHM MMAP ERROR\n");
+        return -1;
+    }
+    *remote_addr = rsp_msg.msg_body.alloc_local_mem_rsp.remote_addr;
     return rsp_msg.rval.int_rsp;
 }
 

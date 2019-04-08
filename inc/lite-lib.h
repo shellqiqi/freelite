@@ -285,11 +285,16 @@ int userspace_liteapi_send(int target_node,
 
 int userspace_liteapi_alloc_local_mem(const char *name,
                                       const size_t size,
-                                      void *local_addr,
-                                      void *remote_addr);
+                                      void **local_addr,
+                                      void **remote_addr);
 int userspace_liteapi_free_local_mem(const char *name,
                                      size_t size,
                                      void *local_addr,
                                      void *remote_addr);
+
+int userspace_liteapi_alloc_local_mem_test(const char *name,
+                                           const size_t size,
+                                           void **local_addr,
+                                           void **remote_addr);
 
 #endif /* LITE_LIB_H */
