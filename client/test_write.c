@@ -20,16 +20,14 @@ int init_log(int remote_node)
 {
     uint64_t test_key;
     int i, j;
-    //char *write = memalign(sysconf(_SC_PAGESIZE), 1024 * 1024 * 4);
     char *write;
     void *remote_addr;
     if (userspace_liteapi_alloc_local_mem("test_write", 1024 * 1024 * 4, (void **)&write, &remote_addr) < 0)
     {
-        perror("userspace_liteapi_alloc_local_mem error");
+        fprintf(stderr, "userspace_liteapi_alloc_local_mem error\n");
         exit(1);
     }
     memset(write, 0x36, 1024 * 64);
-    //=========================RDMA syscall experiments=======================
     int n = run_times;
     int testsize[12] = {8, 8, 64, 128, 512, 1024, 1024 * 2, 1024 * 4, 1024 * 8, 1024 * 16, 1024 * 32, 1024 * 64};
     int password = 100;
@@ -53,6 +51,12 @@ int init_log(int remote_node)
         printf("finish write %d\n", testsize[j]);
     }
 
+    if (userspace_liteapi_free_local_mem("test_write", 1024 * 1024 * 4, write, remote_addr) < 0)
+    {
+        fprintf(stderr, "userspace_liteapi_free_local_mem error\n");
+        exit(1);
+    }
+
     return 0;
 }
 
@@ -62,5 +66,10 @@ int main(int argc, char *argv[])
     {
         init_log(atoi(argv[1]));
     }
+    else
+    {
+        printf("Usage: An argument node id.\n");
+    }
+
     return 0;
 }
