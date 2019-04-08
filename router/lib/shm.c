@@ -8,8 +8,12 @@ int alloc_shm_mem(const char *name,
 
     if ((fd = shm_open(name, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR)) < 0)
     {
-        perror("SHM OPEN ERROR\n");
-        return -1;
+        printf("WARN: /dev/shm/%s exist.\n", name);
+        if ((fd = shm_open(name, O_RDWR, S_IRUSR | S_IWUSR)) < 0)
+        {
+            perror("SHM OPEN ERROR\n");
+            return -1;
+        }
     }
 
     if (ftruncate(fd, size) < 0)

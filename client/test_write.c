@@ -23,7 +23,11 @@ int init_log(int remote_node)
     //char *write = memalign(sysconf(_SC_PAGESIZE), 1024 * 1024 * 4);
     char *write;
     void *remote_addr;
-    userspace_liteapi_alloc_local_mem("test_write", 1024 * 1024 * 4, (void **)&write, &remote_addr);
+    if (userspace_liteapi_alloc_local_mem("test_write", 1024 * 1024 * 4, (void **)&write, &remote_addr) < 0)
+    {
+        perror("userspace_liteapi_alloc_local_mem error\n");
+        exit(1);
+    }
     memset(write, 0x36, 1024 * 64);
     //=========================RDMA syscall experiments=======================
     int n = run_times;
