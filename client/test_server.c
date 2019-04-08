@@ -28,7 +28,7 @@ void *server_accept_request(void *fd)
     len = sizeof(client_sockaddr);
     if (getpeername(client_sock, (struct sockaddr *)&client_sockaddr, &len) < 0)
     {
-        perror("GETPEERNAME ERROR\n");
+        perror("GETPEERNAME ERROR");
         close(client_sock);
         pthread_exit(NULL);
     }
@@ -38,7 +38,7 @@ void *server_accept_request(void *fd)
     printf("waiting to read...\n");
     if (recv(client_sock, &req_msg, sizeof(struct rpc_req_msg), 0) < 0)
     {
-        perror("RECV ERROR\n");
+        perror("RECV ERROR");
         close(client_sock);
         pthread_exit(NULL);
     }
@@ -134,7 +134,7 @@ void *server_accept_request(void *fd)
             rsp_msg.rval.int_rsp = -1;
             break;
         default:
-            perror("UNKNOWN FUNC CODE\n");
+            fprintf(stderr, "UNKNOWN FUNC CODE\n");
             close(client_sock);
             pthread_exit(NULL);
     }
@@ -167,7 +167,7 @@ int main(void)
     /* Create a UNIX domain stream socket */
     if ((server_sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
     {
-        perror("SOCKET ERROR\n");
+        perror("SOCKET ERROR");
         exit(1);
     }
 
@@ -186,7 +186,7 @@ int main(void)
     unlink(SERVER_PATH);
     if (bind(server_sock, (struct sockaddr *)&server_sockaddr, len) < 0)
     {
-        perror("BIND ERROR\n");
+        perror("BIND ERROR");
         close(server_sock);
         exit(1);
     }
@@ -194,7 +194,7 @@ int main(void)
     /* Listen for any client sockets */
     if (listen(server_sock, backlog) < 0)
     {
-        perror("LISTEN ERROR\n");
+        perror("LISTEN ERROR");
         close(server_sock);
         exit(1);
     }
@@ -206,14 +206,14 @@ int main(void)
         /* Accept an incoming connection */
         if ((client_sock = accept(server_sock, (struct sockaddr *)&client_sockaddr, &len)) < 0)
         {
-            perror("ACCEPT ERROR\n");
+            perror("ACCEPT ERROR");
             close(server_sock);
             close(client_sock);
             exit(1);
         }
         if (pthread_create(&pth, NULL, server_accept_request, &client_sock) < 0)
         {
-            perror("THREAD CREATE ERROR\n");
+            perror("THREAD CREATE ERROR");
             exit(1);
         }
     }

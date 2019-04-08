@@ -1,4 +1,5 @@
 #include "rpc.h"
+#include "../../inc/log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,7 +33,7 @@ inline static int conn(const char *name)
     /* Create a UNIX domain stream socket */
     if ((client_sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
     {
-        perror("SOCKET ERROR\n");
+        perror("SOCKET ERROR");
         exit(1);
     }
 
@@ -51,7 +52,7 @@ inline static int conn(const char *name)
     unlink(client_sockaddr.sun_path);
     if (bind(client_sock, (struct sockaddr *)&client_sockaddr, len) < 0)
     {
-        perror("BIND ERROR\n");
+        perror("BIND ERROR");
         close(client_sock);
         exit(1);
     }
@@ -65,7 +66,7 @@ inline static int conn(const char *name)
     strcpy(server_sockaddr.sun_path, name);
     if (connect(client_sock, (struct sockaddr *)&server_sockaddr, len) < 0)
     {
-        perror("CONNECT ERROR\n");
+        perror("CONNECT ERROR");
         close(client_sock);
         exit(1);
     }
@@ -87,20 +88,20 @@ int rpc_handler(const struct rpc_req_msg *req_msg,
 
     if (send(client_sock, req_msg, sizeof(struct rpc_req_msg), 0) < 0)
     {
-        perror("SEND ERROR\n");
+        perror("SEND ERROR");
         close(client_sock);
         exit(1);
     }
-    printf("Data sent!\n");
+    LOG_INFO("Data sent!\n");
 
     /* Read the data sent from the server and print it. */
     if (recv(client_sock, rsp_msg, sizeof(struct rpc_rsp_msg), 0) < 0)
     {
-        perror("RECV ERROR\n");
+        perror("RECV ERROR");
         close(client_sock);
         exit(1);
     }
-    printf("DATA RECEIVED\n");
+    LOG_INFO("DATA RECEIVED\n");
 
     /* Close the socket and exit. */
     disconn(client_sock);

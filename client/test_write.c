@@ -25,7 +25,7 @@ int init_log(int remote_node)
     void *remote_addr;
     if (userspace_liteapi_alloc_local_mem("test_write", 1024 * 1024 * 4, (void **)&write, &remote_addr) < 0)
     {
-        perror("userspace_liteapi_alloc_local_mem error\n");
+        perror("userspace_liteapi_alloc_local_mem error");
         exit(1);
     }
     memset(write, 0x36, 1024 * 64);
