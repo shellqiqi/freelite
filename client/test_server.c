@@ -34,19 +34,28 @@ void *server_accept_request(void *fd)
     }
     printf("Client socket filepath: %s\n", client_sockaddr.sun_path);
 
-    /* Read and print the data incoming on the connected socket */
-    printf("waiting to read...\n");
-    if (recv(client_sock, &req_msg, sizeof(struct rpc_req_msg), 0) < 0)
+    while (1)
     {
-        perror("RECV ERROR");
-        close(client_sock);
-        pthread_exit(NULL);
-    }
+        /* Read and print the data incoming on the connected socket */
+        printf("waiting to read...\n");
+        int ret_len = recv(client_sock, &req_msg, sizeof(struct rpc_req_msg), 0);
+        if (ret_len < 0)
+        {
+            perror("RECV ERROR");
+            close(client_sock);
+            pthread_exit(NULL);
+        }
+        else if (ret_len == 0)
+        {
+            fprintf(stderr, "CLIENT SHUTDOWN\n");
+            close(client_sock);
+            pthread_exit(NULL);
+        }
 
-    printf("DATA RECEIVED\n");
-    printf("  func_code: %d\n", req_msg.func_code);
-    switch (req_msg.func_code)
-    {
+        printf("DATA RECEIVED\n");
+        printf("  func_code: %d\n", req_msg.func_code);
+        switch (req_msg.func_code)
+        {
         case FUNC_userspace_liteapi_get_node_id:
             rsp_msg.rval.int_rsp = 12;
             break;
@@ -137,17 +146,18 @@ void *server_accept_request(void *fd)
             fprintf(stderr, "UNKNOWN FUNC CODE\n");
             close(client_sock);
             pthread_exit(NULL);
-    }
+        }
 
-    /* Send data back to the connected socket */
-    printf("Sending data...\n");
-    if (send(client_sock, &rsp_msg, sizeof(struct rpc_rsp_msg), 0) < 0)
-    {
-        printf("SEND ERROR\n");
-        close(client_sock);
-        pthread_exit(NULL);
+        /* Send data back to the connected socket */
+        printf("Sending data...\n");
+        if (send(client_sock, &rsp_msg, sizeof(struct rpc_rsp_msg), 0) < 0)
+        {
+            printf("SEND ERROR\n");
+            close(client_sock);
+            pthread_exit(NULL);
+        }
+        printf("Data sent!\n");
     }
-    printf("Data sent!\n");
 
     /* Close the sockets and exit */
     close(client_sock);
@@ -214,6 +224,8 @@ int main(void)
         if (pthread_create(&pth, NULL, server_accept_request, &client_sock) < 0)
         {
             perror("THREAD CREATE ERROR");
+            close(server_sock);
+            close(client_sock);
             exit(1);
         }
     }

@@ -14,17 +14,19 @@
 
 #define CLIENT_PATH "/var/tmp/" /* +5 for pid = 14 chars */
 
+static int client_sock = -1;
+
 /* PRIVATE FUNCTIONS */
 
 /**
  * Connect server.
  * Input:
  *    name: server name.
- * Return: client file descriptor.
+ * Return: error code.
  */
-inline static int conn(const char *name)
+int rpc_conn(const char *name)
 {
-    int client_sock, len;
+    int len;
     struct sockaddr_un server_sockaddr;
     struct sockaddr_un client_sockaddr;
     memset(&server_sockaddr, 0, sizeof(struct sockaddr_un));
@@ -34,7 +36,7 @@ inline static int conn(const char *name)
     if ((client_sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
     {
         perror("SOCKET ERROR");
-        exit(1);
+        return -1;
     }
 
     /**
@@ -53,8 +55,8 @@ inline static int conn(const char *name)
     if (bind(client_sock, (struct sockaddr *)&client_sockaddr, len) < 0)
     {
         perror("BIND ERROR");
-        close(client_sock);
-        exit(1);
+        rpc_disconn();
+        return -1;
     }
 
     /**
@@ -67,16 +69,17 @@ inline static int conn(const char *name)
     if (connect(client_sock, (struct sockaddr *)&server_sockaddr, len) < 0)
     {
         perror("CONNECT ERROR");
-        close(client_sock);
-        exit(1);
+        rpc_disconn();
+        return -1;
     }
 
     return client_sock;
 }
 
-inline static void disconn(int client_sock)
+void rpc_disconn()
 {
     close(client_sock);
+    client_sock = -1;
 }
 
 /* PUBLIC FUNCTIONS */
@@ -84,13 +87,14 @@ inline static void disconn(int client_sock)
 int rpc_handler(const struct rpc_req_msg *req_msg,
                 struct rpc_rsp_msg *rsp_msg)
 {
-    int client_sock = conn(SERVER_PATH);
+    if (client_sock == -1)
+        rpc_conn(SERVER_PATH);
 
     if (send(client_sock, req_msg, sizeof(struct rpc_req_msg), 0) < 0)
     {
         perror("SEND ERROR");
-        close(client_sock);
-        exit(1);
+        rpc_disconn();
+        return -1;
     }
     LOG_INFO("Data sent!\n");
 
@@ -98,13 +102,10 @@ int rpc_handler(const struct rpc_req_msg *req_msg,
     if (recv(client_sock, rsp_msg, sizeof(struct rpc_rsp_msg), 0) < 0)
     {
         perror("RECV ERROR");
-        close(client_sock);
-        exit(1);
+        rpc_disconn();
+        return -1;
     }
     LOG_INFO("DATA RECEIVED\n");
-
-    /* Close the socket and exit. */
-    disconn(client_sock);
 
     return 0;
 }
