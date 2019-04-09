@@ -103,6 +103,8 @@ static void *rdma_write_read(void *_info)
     int i, j;
     int password = 100;
     char *buf;
+    char shm_name[18];
+    void *remote_addr;
     struct thread_info *info = (struct thread_info *)_info;
 
     /*
@@ -112,7 +114,13 @@ static void *rdma_write_read(void *_info)
     bind_thread(55 - info->tid);
     printf("  thread[%d] running on CPU%2d\n", info->tid, sched_getcpu());
 
-    buf = (char *)aligned_alloc(pg_size, MAX_BUF_SIZE);
+    // buf = (char *)aligned_alloc(pg_size, MAX_BUF_SIZE);
+    sprintf(shm_name, "%s%05d", "test_latency", info->tid);
+    if (userspace_liteapi_alloc_local_mem(shm_name, MAX_BUF_SIZE, &*(void **)buf, &remote_addr) < 0) {
+        fprintf(stderr, "userspace_liteapi_alloc_local_mem error\n");
+        pthread_exit(NULL);
+    }
+    printf("alloc shm: %s\n", shm_name);
     if (!buf)
         die("oom");
 
