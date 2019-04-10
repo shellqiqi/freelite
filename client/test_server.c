@@ -56,7 +56,7 @@ void *server_accept_request(void *fd)
         }
         else if (ret_len == 0)
         {
-            LOG_ERROR("CLIENT SHUTDOWN\n");
+            LOG_WARN("CLIENT SHUTDOWN\n");
             close(client_sock);
             pthread_exit(NULL);
         }

@@ -26,7 +26,7 @@
 
 #define LOG_WARN(fmt, args...)             \
     {                                      \
-        printf("[WARNNING] " fmt, ##args); \
+        printf("[WARNING] " fmt, ##args); \
     }
 
 #define LOG_ERROR(fmt, args...)                  \
@@ -36,7 +36,7 @@
 
 #define LOG_PERROR(fmt)          \
     {                            \
-        perror("[PERROR] " fmt); \
+        perror("[ERROR] " fmt); \
     }
 
 #endif
