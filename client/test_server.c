@@ -223,8 +223,33 @@ int main(void)
     LOG_NORMAL("socket listening...\n");
 
     pthread_t pth;
+    fd_set readfds;
+    struct timeval timeout;
     while (keepRunning)
     {
+        FD_ZERO(&readfds);
+        FD_SET(server_sock, &readfds);
+        timeout.tv_sec = 3;
+        timeout.tv_usec = 0;
+
+        int active_fds = select(server_sock + 1, &readfds, NULL, NULL, &timeout);
+        if (active_fds < 0)
+        {
+            LOG_PERROR("SELECT ERROR");
+            close(server_sock);
+            exit(EXIT_FAILURE);
+        }
+        else if (active_fds == 0) // timeout
+        {
+            LOG_INFO("SELECT TIMEOUT\n");
+            continue;
+        }
+        else if (active_fds != 1) // never be here
+        {
+            LOG_ERROR("Mysterious error. Active fds should be 1 but %d\n", active_fds);
+            close(server_sock);
+            exit(EXIT_FAILURE);
+        }
         /* Accept an incoming connection */
         if ((client_sock = accept(server_sock, (struct sockaddr *)&client_sockaddr, &len)) < 0)
         {
