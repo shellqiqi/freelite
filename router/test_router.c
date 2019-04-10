@@ -89,7 +89,7 @@ void *server_accept_request(void *fd)
                                                                       req_msg.msg_body.alloc_remote_mem_req.atomic_flag,
                                                                       req_msg.msg_body.alloc_remote_mem_req.password);
             break;
-        case FUNC_userspace_liteapi_rdma_write: //TODO: the local_addr is alloced by router and passes to client?
+        case FUNC_userspace_liteapi_rdma_write:
             LOG_INFO("  lite_handler: %d\n", req_msg.msg_body.rdma_write_req.lite_handler);
             LOG_INFO("  local_addr: %p\n", req_msg.msg_body.rdma_write_req.local_addr);
             LOG_INFO("  size: %d\n", req_msg.msg_body.rdma_write_req.size);
@@ -107,7 +107,11 @@ void *server_accept_request(void *fd)
             LOG_INFO("  size: %d\n", req_msg.msg_body.rdma_read_req.size);
             LOG_INFO("  offset: %d\n", req_msg.msg_body.rdma_read_req.offset);
             LOG_INFO("  password: %d\n", req_msg.msg_body.rdma_read_req.password);
-            rsp_msg.rval.int_rsp = -2;
+            rsp_msg.rval.int_rsp = userspace_liteapi_rdma_read(req_msg.msg_body.rdma_read_req.lite_handler,
+                                                               req_msg.msg_body.rdma_read_req.local_addr,
+                                                               req_msg.msg_body.rdma_read_req.size,
+                                                               req_msg.msg_body.rdma_read_req.offset,
+                                                               req_msg.msg_body.rdma_read_req.password);
             break;
         case FUNC_userspace_liteapi_send_reply_imm_fast:
             LOG_INFO("  target_node: %d\n", req_msg.msg_body.send_reply_imm_fast_req.target_node);

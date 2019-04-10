@@ -116,7 +116,8 @@ static void *rdma_write_read(void *_info)
 
     // buf = (char *)aligned_alloc(pg_size, MAX_BUF_SIZE);
     sprintf(shm_name, "%s%05d", "test_latency", info->tid);
-    if (userspace_liteapi_alloc_local_mem(shm_name, MAX_BUF_SIZE, (void **)&buf, &remote_addr) < 0) {
+    if (userspace_liteapi_alloc_local_mem(shm_name, MAX_BUF_SIZE, (void **)&buf, &remote_addr) < 0)
+    {
         fprintf(stderr, "userspace_liteapi_alloc_local_mem error\n");
         pthread_exit(NULL);
     }
@@ -204,7 +205,10 @@ static void *rdma_write_read(void *_info)
         print_rps("sync_read");
         printf(" \033[33mTest RDMA Async Read (avg of # %d run)\033[0m\n", NR_TESTS_PER_SIZE);
     }
-
+    if (userspace_liteapi_free_local_mem(shm_name, MAX_BUF_SIZE, buf, remote_addr) < 0)
+    {
+        fprintf(stderr, "userspace_liteapi_free_local_mem error");
+    }
     pthread_exit(NULL);
 }
 
