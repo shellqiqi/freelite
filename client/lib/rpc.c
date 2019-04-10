@@ -14,9 +14,11 @@
 
 #define CLIENT_PATH "/var/tmp/" /* +5 for pid = 14 chars */
 
+/* Reused socket fd */
+
 static int client_sock = -1;
 
-/* PRIVATE FUNCTIONS */
+/* PUBLIC FUNCTIONS */
 
 /**
  * Connect server.
@@ -35,7 +37,7 @@ int rpc_conn(const char *name)
     /* Create a UNIX domain stream socket */
     if ((client_sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
     {
-        perror("SOCKET ERROR");
+        LOG_PERROR("SOCKET ERROR");
         return -1;
     }
 
@@ -54,7 +56,7 @@ int rpc_conn(const char *name)
     unlink(client_sockaddr.sun_path);
     if (bind(client_sock, (struct sockaddr *)&client_sockaddr, len) < 0)
     {
-        perror("BIND ERROR");
+        LOG_PERROR("BIND ERROR");
         rpc_disconn();
         return -1;
     }
@@ -68,7 +70,7 @@ int rpc_conn(const char *name)
     strcpy(server_sockaddr.sun_path, name);
     if (connect(client_sock, (struct sockaddr *)&server_sockaddr, len) < 0)
     {
-        perror("CONNECT ERROR");
+        LOG_PERROR("CONNECT ERROR");
         rpc_disconn();
         return -1;
     }
@@ -76,23 +78,33 @@ int rpc_conn(const char *name)
     return client_sock;
 }
 
+/**
+ * Disconnect router
+ */
 void rpc_disconn()
 {
     close(client_sock);
     client_sock = -1;
 }
 
-/* PUBLIC FUNCTIONS */
-
+/**
+ * Handle rpc
+ * Input:
+ *    req_msg: request message structure
+ * Output:
+ *    rsp_msg: response message structure
+ * Return: error code
+ */
 int rpc_handler(const struct rpc_req_msg *req_msg,
                 struct rpc_rsp_msg *rsp_msg)
 {
-    if (client_sock == -1)
-        rpc_conn(SERVER_PATH);
+    if (client_sock == -1)             // Not connected yet
+        if (rpc_conn(SERVER_PATH) < 0) // connect
+            return -1;
 
     if (send(client_sock, req_msg, sizeof(struct rpc_req_msg), 0) < 0)
     {
-        perror("SEND ERROR");
+        LOG_PERROR("SEND ERROR");
         rpc_disconn();
         return -1;
     }
@@ -101,7 +113,7 @@ int rpc_handler(const struct rpc_req_msg *req_msg,
     /* Read the data sent from the server and print it. */
     if (recv(client_sock, rsp_msg, sizeof(struct rpc_rsp_msg), 0) < 0)
     {
-        perror("RECV ERROR");
+        LOG_PERROR("RECV ERROR");
         rpc_disconn();
         return -1;
     }

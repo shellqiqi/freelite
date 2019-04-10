@@ -1,4 +1,5 @@
 #include "../../inc/lite-lib.h"
+#include "../../inc/log.h"
 #include "rpc.h"
 
 /**
@@ -362,13 +363,13 @@ int userspace_liteapi_alloc_local_mem(const char *name,
     if (rsp_msg.rval.int_rsp < 0) return -1;
     if ((fd = shm_open(name, O_RDWR, S_IRUSR | S_IWUSR)) < 0)
     {
-        perror("SHM OPEN ERROR");
+        LOG_PERROR("SHM OPEN ERROR");
         return -1;
     }
     *local_addr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (local_addr == MAP_FAILED)
     {
-        perror("SHM MMAP ERROR");
+        LOG_PERROR("SHM MMAP ERROR");
         return -1;
     }
     *remote_addr = rsp_msg.msg_body.alloc_local_mem_rsp.remote_addr;

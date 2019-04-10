@@ -5,17 +5,38 @@
 
 #ifdef LOG_LEVEL
 #define LOG_INFO(fmt, args...)         \
-    if (LOG_LEVEL > 0)                 \
+    if (LOG_LEVEL >= 2)                \
     {                                  \
         printf("[INFO] " fmt, ##args); \
     }
+#define LOG_DEBUG(fmt, args...)         \
+    if (LOG_LEVEL >= 1)                 \
+    {                                   \
+        printf("[DEBUG] " fmt, ##args); \
+    }
 #else
 #define LOG_INFO(fmt, args...)
+#define LOG_DEBUG(fmt, args...)
 #endif
 
-#define LOG_WARN(fmt, args...)         \
-    {                                  \
-        printf("[WARN] " fmt, ##args); \
+#define LOG_NORMAL(fmt, args...)         \
+    {                                    \
+        printf("[NORMAL] " fmt, ##args); \
+    }
+
+#define LOG_WARN(fmt, args...)             \
+    {                                      \
+        printf("[WARNNING] " fmt, ##args); \
+    }
+
+#define LOG_ERROR(fmt, args...)                  \
+    {                                            \
+        fprintf(stderr, "[ERROR] " fmt, ##args); \
+    }
+
+#define LOG_PERROR(fmt)          \
+    {                            \
+        perror("[PERROR] " fmt); \
     }
 
 #endif

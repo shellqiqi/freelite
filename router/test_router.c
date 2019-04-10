@@ -7,6 +7,7 @@
 #include <sys/un.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "../inc/func_code.h"
 #include "../inc/rpc_types.h"
@@ -16,6 +17,13 @@
 #include "lib/shm.h"
 
 #define SERVER_PATH "/var/tmp/tpf_unix_sock.server"
+
+static bool keepRunning = true;
+
+void INThandler(int sig)
+{
+    keepRunning = false;
+}
 
 void *server_accept_request(void *fd)
 {
@@ -32,26 +40,26 @@ void *server_accept_request(void *fd)
     len = sizeof(client_sockaddr);
     if (getpeername(client_sock, (struct sockaddr *)&client_sockaddr, &len) < 0)
     {
-        perror("GETPEERNAME ERROR");
+        LOG_PERROR("GETPEERNAME ERROR");
         close(client_sock);
         pthread_exit(NULL);
     }
-    LOG_INFO("Client socket filepath: %s\n", client_sockaddr.sun_path);
+    LOG_DEBUG("Client socket filepath: %s\n", client_sockaddr.sun_path);
 
     while (1)
     {
         /* Read and print the data incoming on the connected socket */
-        printf("waiting to read...\n");
+        LOG_INFO("waiting to read...\n");
         int ret_len = recv(client_sock, &req_msg, sizeof(struct rpc_req_msg), 0);
         if (ret_len < 0)
         {
-            perror("RECV ERROR");
+            LOG_PERROR("RECV ERROR");
             close(client_sock);
             pthread_exit(NULL);
         }
         else if (ret_len == 0)
         {
-            fprintf(stderr, "CLIENT SHUTDOWN\n");
+            LOG_ERROR("CLIENT SHUTDOWN\n");
             close(client_sock);
             pthread_exit(NULL);
         }
@@ -159,7 +167,7 @@ void *server_accept_request(void *fd)
                                                 req_msg.msg_body.free_local_mem_req.remote_addr);
             break;
         default:
-            fprintf(stderr, "UNKNOWN FUNC CODE\n");
+            LOG_ERROR("UNKNOWN FUNC CODE\n");
             close(client_sock);
             pthread_exit(NULL);
         }
@@ -168,7 +176,7 @@ void *server_accept_request(void *fd)
         LOG_INFO("Sending data...\n");
         if (send(client_sock, &rsp_msg, sizeof(struct rpc_rsp_msg), 0) < 0)
         {
-            perror("SEND ERROR");
+            LOG_PERROR("SEND ERROR");
             close(client_sock);
             pthread_exit(NULL);
         }
@@ -177,11 +185,14 @@ void *server_accept_request(void *fd)
 
     /* Close the sockets and exit */
     close(client_sock);
+    LOG_DEBUG("Socket closed\n");
     pthread_exit(NULL);
 }
 
 int main(void)
 {
+    signal(SIGINT, INThandler); // handle SIGINT
+
     int server_sock, client_sock;
     socklen_t len;
     struct sockaddr_un server_sockaddr;
@@ -193,8 +204,8 @@ int main(void)
     /* Create a UNIX domain stream socket */
     if ((server_sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
     {
-        perror("SOCKET ERROR");
-        exit(1);
+        LOG_PERROR("SOCKET ERROR");
+        exit(EXIT_FAILURE);
     }
 
     /**
@@ -212,43 +223,47 @@ int main(void)
     unlink(SERVER_PATH);
     if (bind(server_sock, (struct sockaddr *)&server_sockaddr, len) < 0)
     {
-        perror("BIND ERROR");
+        LOG_PERROR("BIND ERROR");
         close(server_sock);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* Listen for any client sockets */
     if (listen(server_sock, backlog) < 0)
     {
-        perror("LISTEN ERROR");
+        LOG_PERROR("LISTEN ERROR");
         close(server_sock);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
-    LOG_INFO("socket listening...\n");
+    LOG_NORMAL("socket listening...\n");
 
     pthread_t pth;
-    while (1)
+    while (keepRunning)
     {
         /* Accept an incoming connection */
         if ((client_sock = accept(server_sock, (struct sockaddr *)&client_sockaddr, &len)) < 0)
         {
-            perror("ACCEPT ERROR");
+            LOG_PERROR("ACCEPT ERROR");
             close(server_sock);
             close(client_sock);
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         if (pthread_create(&pth, NULL, server_accept_request, &client_sock) < 0)
         {
-            perror("THREAD CREATE ERROR");
+            LOG_PERROR("THREAD CREATE ERROR");
             close(server_sock);
             close(client_sock);
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     }
 
     /* Close the sockets and exit */
     close(server_sock);
     close(client_sock);
+    LOG_NORMAL("Exit main\n");
+    // TODO: build a thread pool and thread_join here
+    // TODO: build a talbe to store address alloced by client
+    //       and free them when exit
 
-    return 0;
+    return EXIT_SUCCESS;
 }

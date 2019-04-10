@@ -7,11 +7,20 @@
 #include <sys/un.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "../inc/func_code.h"
 #include "../inc/rpc_types.h"
+#include "../inc/log.h"
 
 #define SERVER_PATH "/var/tmp/tpf_unix_sock.server"
+
+static bool keepRunning = true;
+
+void INThandler(int sig)
+{
+    keepRunning = false;
+}
 
 void *server_accept_request(void *fd)
 {
@@ -28,144 +37,147 @@ void *server_accept_request(void *fd)
     len = sizeof(client_sockaddr);
     if (getpeername(client_sock, (struct sockaddr *)&client_sockaddr, &len) < 0)
     {
-        perror("GETPEERNAME ERROR");
+        LOG_PERROR("GETPEERNAME ERROR");
         close(client_sock);
         pthread_exit(NULL);
     }
-    printf("Client socket filepath: %s\n", client_sockaddr.sun_path);
+    LOG_DEBUG("Client socket filepath: %s\n", client_sockaddr.sun_path);
 
     while (1)
     {
         /* Read and print the data incoming on the connected socket */
-        printf("waiting to read...\n");
+        LOG_INFO("waiting to read...\n");
         int ret_len = recv(client_sock, &req_msg, sizeof(struct rpc_req_msg), 0);
         if (ret_len < 0)
         {
-            perror("RECV ERROR");
+            LOG_PERROR("RECV ERROR");
             close(client_sock);
             pthread_exit(NULL);
         }
         else if (ret_len == 0)
         {
-            fprintf(stderr, "CLIENT SHUTDOWN\n");
+            LOG_ERROR("CLIENT SHUTDOWN\n");
             close(client_sock);
             pthread_exit(NULL);
         }
 
-        printf("DATA RECEIVED\n");
-        printf("  func_code: %d\n", req_msg.func_code);
+        LOG_INFO("DATA RECEIVED\n");
+        LOG_INFO("  func_code: %d\n", req_msg.func_code);
         switch (req_msg.func_code)
         {
         case FUNC_userspace_liteapi_get_node_id:
             rsp_msg.rval.int_rsp = 12;
             break;
         case FUNC_userspace_liteapi_join:
-            printf("  eth_port: %d\n", req_msg.msg_body.join_req.eth_port);
-            printf("  ib_port: %d\n", req_msg.msg_body.join_req.ib_port);
-            printf("  input_str: %s\n", req_msg.msg_body.join_req.input_str);
+            LOG_INFO("  eth_port: %d\n", req_msg.msg_body.join_req.eth_port);
+            LOG_INFO("  ib_port: %d\n", req_msg.msg_body.join_req.ib_port);
+            LOG_INFO("  input_str: %s\n", req_msg.msg_body.join_req.input_str);
             rsp_msg.rval.int_rsp = 12;
             break;
         case FUNC_userspace_liteapi_alloc_remote_mem:
-            printf("  node_id: %d\n", req_msg.msg_body.alloc_remote_mem_req.node_id);
-            printf("  size: %d\n", req_msg.msg_body.alloc_remote_mem_req.size);
-            printf("  atomic_flag: %d\n", req_msg.msg_body.alloc_remote_mem_req.atomic_flag);
-            printf("  password: %d\n", req_msg.msg_body.alloc_remote_mem_req.password);
+            LOG_INFO("  node_id: %d\n", req_msg.msg_body.alloc_remote_mem_req.node_id);
+            LOG_INFO("  size: %d\n", req_msg.msg_body.alloc_remote_mem_req.size);
+            LOG_INFO("  atomic_flag: %d\n", req_msg.msg_body.alloc_remote_mem_req.atomic_flag);
+            LOG_INFO("  password: %d\n", req_msg.msg_body.alloc_remote_mem_req.password);
             rsp_msg.rval.int_rsp = 13;
             break;
         case FUNC_userspace_liteapi_rdma_write:
-            printf("  lite_handler: %d\n", req_msg.msg_body.rdma_write_req.lite_handler);
-            printf("  local_addr: %p\n", req_msg.msg_body.rdma_write_req.local_addr);
-            printf("  size: %d\n", req_msg.msg_body.rdma_write_req.size);
-            printf("  offset: %d\n", req_msg.msg_body.rdma_write_req.offset);
-            printf("  password: %d\n", req_msg.msg_body.rdma_write_req.password);
+            LOG_INFO("  lite_handler: %d\n", req_msg.msg_body.rdma_write_req.lite_handler);
+            LOG_INFO("  local_addr: %p\n", req_msg.msg_body.rdma_write_req.local_addr);
+            LOG_INFO("  size: %d\n", req_msg.msg_body.rdma_write_req.size);
+            LOG_INFO("  offset: %d\n", req_msg.msg_body.rdma_write_req.offset);
+            LOG_INFO("  password: %d\n", req_msg.msg_body.rdma_write_req.password);
             rsp_msg.rval.int_rsp = -1;
             break;
         case FUNC_userspace_liteapi_rdma_read:
-            printf("  lite_handler: %d\n", req_msg.msg_body.rdma_read_req.lite_handler);
-            printf("  local_addr: %p\n", req_msg.msg_body.rdma_read_req.local_addr);
-            printf("  size: %d\n", req_msg.msg_body.rdma_read_req.size);
-            printf("  offset: %d\n", req_msg.msg_body.rdma_read_req.offset);
-            printf("  password: %d\n", req_msg.msg_body.rdma_read_req.password);
+            LOG_INFO("  lite_handler: %d\n", req_msg.msg_body.rdma_read_req.lite_handler);
+            LOG_INFO("  local_addr: %p\n", req_msg.msg_body.rdma_read_req.local_addr);
+            LOG_INFO("  size: %d\n", req_msg.msg_body.rdma_read_req.size);
+            LOG_INFO("  offset: %d\n", req_msg.msg_body.rdma_read_req.offset);
+            LOG_INFO("  password: %d\n", req_msg.msg_body.rdma_read_req.password);
             rsp_msg.rval.int_rsp = -2;
             break;
         case FUNC_userspace_liteapi_send_reply_imm_fast:
-            printf("  target_node: %d\n", req_msg.msg_body.send_reply_imm_fast_req.target_node);
-            printf("  port: %d\n", req_msg.msg_body.send_reply_imm_fast_req.port);
-            printf("  addr: %p\n", req_msg.msg_body.send_reply_imm_fast_req.addr);
-            printf("  size: %d\n", req_msg.msg_body.send_reply_imm_fast_req.size);
-            printf("  ret_addr: %p\n", req_msg.msg_body.send_reply_imm_fast_req.ret_addr);
-            printf("  ret_length: %p\n", req_msg.msg_body.send_reply_imm_fast_req.ret_length);
-            printf("  max_ret_size: %d\n", req_msg.msg_body.send_reply_imm_fast_req.max_ret_size);
+            LOG_INFO("  target_node: %d\n", req_msg.msg_body.send_reply_imm_fast_req.target_node);
+            LOG_INFO("  port: %d\n", req_msg.msg_body.send_reply_imm_fast_req.port);
+            LOG_INFO("  addr: %p\n", req_msg.msg_body.send_reply_imm_fast_req.addr);
+            LOG_INFO("  size: %d\n", req_msg.msg_body.send_reply_imm_fast_req.size);
+            LOG_INFO("  ret_addr: %p\n", req_msg.msg_body.send_reply_imm_fast_req.ret_addr);
+            LOG_INFO("  ret_length: %p\n", req_msg.msg_body.send_reply_imm_fast_req.ret_length);
+            LOG_INFO("  max_ret_size: %d\n", req_msg.msg_body.send_reply_imm_fast_req.max_ret_size);
             rsp_msg.rval.int_rsp = 1024;
             break;
         case FUNC_userspace_liteapi_receive_message_fast:
-            printf("  port: %d\n", req_msg.msg_body.receive_message_fast_req.port);
-            printf("  ret_addr: %p\n", req_msg.msg_body.receive_message_fast_req.ret_addr);
-            printf("  receive_size: %d\n", req_msg.msg_body.receive_message_fast_req.receive_size);
-            printf("  descriptor: %p\n", req_msg.msg_body.receive_message_fast_req.descriptor);
-            printf("  ret_length: %p\n", req_msg.msg_body.receive_message_fast_req.ret_length);
-            printf("  block_call: %d\n", req_msg.msg_body.receive_message_fast_req.block_call);
+            LOG_INFO("  port: %d\n", req_msg.msg_body.receive_message_fast_req.port);
+            LOG_INFO("  ret_addr: %p\n", req_msg.msg_body.receive_message_fast_req.ret_addr);
+            LOG_INFO("  receive_size: %d\n", req_msg.msg_body.receive_message_fast_req.receive_size);
+            LOG_INFO("  descriptor: %p\n", req_msg.msg_body.receive_message_fast_req.descriptor);
+            LOG_INFO("  ret_length: %p\n", req_msg.msg_body.receive_message_fast_req.ret_length);
+            LOG_INFO("  block_call: %d\n", req_msg.msg_body.receive_message_fast_req.block_call);
             rsp_msg.rval.int_rsp = 512;
             break;
         case FUNC_userspace_liteapi_reply_message:
-            printf("  port: %p\n", req_msg.msg_body.reply_message_req.addr);
-            printf("  ret_addr: %d\n", req_msg.msg_body.reply_message_req.size);
-            printf("  receive_size: %lu\n", req_msg.msg_body.reply_message_req.descriptor);
+            LOG_INFO("  port: %p\n", req_msg.msg_body.reply_message_req.addr);
+            LOG_INFO("  ret_addr: %d\n", req_msg.msg_body.reply_message_req.size);
+            LOG_INFO("  receive_size: %lu\n", req_msg.msg_body.reply_message_req.descriptor);
             rsp_msg.rval.int_rsp = -4;
             break;
         case FUNC_userspace_liteapi_register_application:
-            printf("  destined_port: %d\n", req_msg.msg_body.register_application_req.destined_port);
-            printf("  max_size_per_message: %d\n", req_msg.msg_body.register_application_req.max_size_per_message);
-            printf("  max_user_per_node: %d\n", req_msg.msg_body.register_application_req.max_user_per_node);
-            printf("  name: %s\n", req_msg.msg_body.register_application_req.name);
-            printf("  name_len: %lu\n", req_msg.msg_body.register_application_req.name_len);
+            LOG_INFO("  destined_port: %d\n", req_msg.msg_body.register_application_req.destined_port);
+            LOG_INFO("  max_size_per_message: %d\n", req_msg.msg_body.register_application_req.max_size_per_message);
+            LOG_INFO("  max_user_per_node: %d\n", req_msg.msg_body.register_application_req.max_user_per_node);
+            LOG_INFO("  name: %s\n", req_msg.msg_body.register_application_req.name);
+            LOG_INFO("  name_len: %lu\n", req_msg.msg_body.register_application_req.name_len);
             rsp_msg.rval.int_rsp = -10;
             break;
         case FUNC_userspace_liteapi_dist_barrier:
-            printf("  num: %d\n", req_msg.msg_body.dist_barrier_req.num);
+            LOG_INFO("  num: %d\n", req_msg.msg_body.dist_barrier_req.num);
             rsp_msg.rval.int_rsp = -7;
             break;
         case FUNC_userspace_liteapi_query_port:
-            printf("  target_node: %d\n", req_msg.msg_body.query_port_req.target_node);
-            printf("  designed_port: %d\n", req_msg.msg_body.query_port_req.designed_port);
+            LOG_INFO("  target_node: %d\n", req_msg.msg_body.query_port_req.target_node);
+            LOG_INFO("  designed_port: %d\n", req_msg.msg_body.query_port_req.designed_port);
             rsp_msg.rval.int_rsp = -9;
             break;
         case FUNC_userspace_liteapi_alloc_local_mem:
-            printf("  name: %s\n", req_msg.msg_body.alloc_local_mem_req.name);
-            printf("  size: %lu\n", req_msg.msg_body.alloc_local_mem_req.size);
+            LOG_INFO("  name: %s\n", req_msg.msg_body.alloc_local_mem_req.name);
+            LOG_INFO("  size: %lu\n", req_msg.msg_body.alloc_local_mem_req.size);
             rsp_msg.msg_body.alloc_local_mem_rsp.remote_addr = (void *)0x100;
             rsp_msg.rval.int_rsp = 0;
             break;
         case FUNC_userspace_liteapi_free_local_mem:
-            printf("  name: %s\n", req_msg.msg_body.free_local_mem_req.name);
-            printf("  size: %lu\n", req_msg.msg_body.free_local_mem_req.size);
-            printf("  remote_addr: %p\n", req_msg.msg_body.free_local_mem_req.remote_addr);
+            LOG_INFO("  name: %s\n", req_msg.msg_body.free_local_mem_req.name);
+            LOG_INFO("  size: %lu\n", req_msg.msg_body.free_local_mem_req.size);
+            LOG_INFO("  remote_addr: %p\n", req_msg.msg_body.free_local_mem_req.remote_addr);
             rsp_msg.rval.int_rsp = -1;
             break;
         default:
-            fprintf(stderr, "UNKNOWN FUNC CODE\n");
+            LOG_ERROR("UNKNOWN FUNC CODE\n");
             close(client_sock);
             pthread_exit(NULL);
         }
 
         /* Send data back to the connected socket */
-        printf("Sending data...\n");
+        LOG_INFO("Sending data...\n");
         if (send(client_sock, &rsp_msg, sizeof(struct rpc_rsp_msg), 0) < 0)
         {
-            printf("SEND ERROR\n");
+            LOG_PERROR("SEND ERROR");
             close(client_sock);
             pthread_exit(NULL);
         }
-        printf("Data sent!\n");
+        LOG_INFO("Data sent!\n");
     }
 
     /* Close the sockets and exit */
     close(client_sock);
+    LOG_DEBUG("Socket closed\n");
     pthread_exit(NULL);
 }
 
 int main(void)
 {
+    signal(SIGINT, INThandler); // handle SIGINT
+
     int server_sock, client_sock;
     socklen_t len;
     struct sockaddr_un server_sockaddr;
@@ -177,8 +189,8 @@ int main(void)
     /* Create a UNIX domain stream socket */
     if ((server_sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
     {
-        perror("SOCKET ERROR");
-        exit(1);
+        LOG_PERROR("SOCKET ERROR");
+        exit(EXIT_FAILURE);
     }
 
     /**
@@ -196,43 +208,45 @@ int main(void)
     unlink(SERVER_PATH);
     if (bind(server_sock, (struct sockaddr *)&server_sockaddr, len) < 0)
     {
-        perror("BIND ERROR");
+        LOG_PERROR("BIND ERROR");
         close(server_sock);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* Listen for any client sockets */
     if (listen(server_sock, backlog) < 0)
     {
-        perror("LISTEN ERROR");
+        LOG_PERROR("LISTEN ERROR");
         close(server_sock);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
-    printf("socket listening...\n");
+    LOG_NORMAL("socket listening...\n");
 
     pthread_t pth;
-    while (1)
+    while (keepRunning)
     {
         /* Accept an incoming connection */
         if ((client_sock = accept(server_sock, (struct sockaddr *)&client_sockaddr, &len)) < 0)
         {
-            perror("ACCEPT ERROR");
+            LOG_PERROR("ACCEPT ERROR");
             close(server_sock);
             close(client_sock);
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         if (pthread_create(&pth, NULL, server_accept_request, &client_sock) < 0)
         {
-            perror("THREAD CREATE ERROR");
+            LOG_PERROR("THREAD CREATE ERROR");
             close(server_sock);
             close(client_sock);
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     }
 
     /* Close the sockets and exit */
     close(server_sock);
     close(client_sock);
+    LOG_NORMAL("Exit main\n");
+    // TODO: build a thread pool and thread_join here
 
-    return 0;
+    return EXIT_SUCCESS;
 }

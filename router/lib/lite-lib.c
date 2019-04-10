@@ -1,4 +1,5 @@
 #include "../../inc/lite-lib.h"
+#include "../../inc/log.h"
 
 /* liteapi_dist_barrier */
 inline int userspace_liteapi_dist_barrier(unsigned int num)
@@ -445,7 +446,7 @@ void *userspace_liteapi_alloc_memory(unsigned long size)
     addr = (char *)mmap(NULL, roundup_size, PROT_READ, MAP_PRIVATE, fd, 0);
     if (addr == MAP_FAILED)
     {
-        perror("mmaptest user ");
+        LOG_PERROR("mmaptest user ");
         return 0;
     }
     //char *addr=malloc(roundup_size);
