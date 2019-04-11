@@ -442,8 +442,8 @@ void run(bool server_mode, int remote_node)
             info[i].outbound_port = base_port + 1;
             info[i].tid = i;
 
-            /* XXX: hardcoded */
-            info[i].remote_nid = 1;
+			/* provided by program argument list */
+            info[i].remote_nid = remote_node;
         }
 
         userspace_liteapi_register_application(info[0].inbound_port,
@@ -457,6 +457,7 @@ void run(bool server_mode, int remote_node)
          * Server should query client's inboud port info,
          * which is base_port + 1
          */
+        printf("Server: Query remote id %d port %d\n", info[0].remote_nid, info[0].outbound_port);
         userspace_liteapi_query_port(info[0].remote_nid,
                                      info[0].outbound_port);
 
@@ -487,6 +488,7 @@ void run(bool server_mode, int remote_node)
          * Client should query server's inboud port info,
          * which is base_port
          */
+        printf("Client: Query remote id %d port %d\n", info[0].remote_nid, info[0].outbound_port);
         userspace_liteapi_query_port(info[0].remote_nid,
                                      info[0].outbound_port);
 
@@ -501,7 +503,7 @@ void run(bool server_mode, int remote_node)
 static void usage(const char *argv0)
 {
     printf("Usage:\n");
-    printf("  %s -s                    start a server and wait for connection\n",
+    printf("  %s -s -n <nid>           start a server and wait for connection from <nid>\n",
            argv0);
     printf("  %s -c -n <nid>           start a client and connect to server at <nid>\n",
            argv0);
@@ -597,15 +599,15 @@ int main(int argc, char *argv[])
         usage(argv[0]);
         return -1;
     }
-    else if (server_mode && (remote_nid != -1))
+    else if (server_mode && (remote_nid == -1))
     {
         usage(argv[0]);
         return -1;
     }
 
     if (server_mode)
-        printf("RPC server, waiting for connection nr_threads=%d\n",
-               nr_threads);
+        printf("RPC server, waiting for connection nr_threads=%d from %d\n",
+               nr_threads, remote_nid);
     else
     {
         printf("RPC client, connect to server at %d nr_threads=%d\n",
