@@ -43,7 +43,7 @@ int init_log(int remote_node)
         for (i = 0; i < n; i++)
         {
             userspace_liteapi_rdma_write(test_key,
-                                         write,
+                                         remote_addr,
                                          testsize[j],
                                          0,
                                          password);

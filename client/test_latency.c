@@ -147,7 +147,7 @@ static void *rdma_write_read(void *_info)
         clock_gettime(CLOCK_MONOTONIC, &start);
         for (j = 0; j < NR_TESTS_PER_SIZE; j++)
         {
-            userspace_liteapi_rdma_write(test_key, buf, testsize[i], 0, password);
+            userspace_liteapi_rdma_write(test_key, remote_addr, testsize[i], 0, password);
         }
         clock_gettime(CLOCK_MONOTONIC, &end);
         diff_ns = timespec_diff_ns(end, start);
@@ -182,7 +182,7 @@ static void *rdma_write_read(void *_info)
         clock_gettime(CLOCK_MONOTONIC, &start);
         for (j = 0; j < NR_TESTS_PER_SIZE; j++)
         {
-            userspace_liteapi_rdma_read(test_key, buf, testsize[i], 0, password);
+            userspace_liteapi_rdma_read(test_key, remote_addr, testsize[i], 0, password);
         }
         clock_gettime(CLOCK_MONOTONIC, &end);
         diff_ns = timespec_diff_ns(end, start);
