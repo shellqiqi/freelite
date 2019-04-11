@@ -165,9 +165,9 @@ void test_sync_rpc_send(struct thread_info *info, int NR_SYNC_RPC)
     long diff_ns;
     double rps;
 
-    read = memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
-    write = memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
-    poll_array = memalign(sysconf(_SC_PAGESIZE), sizeof(int));
+    read = (char *)memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
+    write = (char *)memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
+    poll_array = (int *)memalign(sysconf(_SC_PAGESIZE), sizeof(int));
     memset(poll_array, 0, sizeof(int));
 
     mlock(read, 4096);
@@ -182,8 +182,11 @@ void test_sync_rpc_send(struct thread_info *info, int NR_SYNC_RPC)
          */
         userspace_liteapi_send_reply_imm_fast(info->remote_nid,
                                               info->outbound_port,
-                                              write, 4, read,
-                                              poll_array, 4096);
+                                              write,
+                                              4,
+                                              read,
+                                              poll_array,
+                                              4096);
     }
     clock_gettime(CLOCK_MONOTONIC, &end);
 
@@ -203,8 +206,8 @@ void test_sync_rpc_recv(struct thread_info *info, int NR_SYNC_RPC)
     uintptr_t descriptor;
     char *read, *write;
 
-    read = memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
-    write = memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
+    read = (char *)memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
+    write = (char *)memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
     mlock(read, 4096);
     mlock(write, 4096);
 
@@ -234,10 +237,9 @@ void test_async_rpc_send(struct thread_info *info, int NR_ASYNC_RPC)
     long diff_ns, async_diff_ns;
     double rps;
 
-    read = memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
-    write = memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
-    poll_array = memalign(sysconf(_SC_PAGESIZE),
-                          sizeof(int) * async_batch_size);
+    read = (char *)memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
+    write = (char *)memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
+    poll_array = (int *)memalign(sysconf(_SC_PAGESIZE), sizeof(int) * async_batch_size);
     memset(poll_array, 0, sizeof(int) * async_batch_size);
     mlock(read, 4096);
     mlock(write, 4096);
@@ -272,8 +274,12 @@ void test_async_rpc_send(struct thread_info *info, int NR_ASYNC_RPC)
          * send 4 bytes 
          * And only use [0, async_batch_size) portion of poll array.
          */
-        async_rpc(info->remote_nid, info->outbound_port,
-                  write, 4, read, &poll_array[i % async_batch_size],
+        async_rpc(info->remote_nid,
+                  info->outbound_port,
+                  write,
+                  4,
+                  read,
+                  &poll_array[i % async_batch_size],
                   4096);
 
         /* Perform batch completion check */
@@ -285,8 +291,7 @@ void test_async_rpc_send(struct thread_info *info, int NR_ASYNC_RPC)
             if (record_async)
             {
                 clock_gettime(CLOCK_MONOTONIC, &async_end);
-                async_diff_ns = timespec_diff_ns(async_end,
-                                                 async_start_prev);
+                async_diff_ns = timespec_diff_ns(async_end, async_start_prev);
                 if (async_diff_ns > 0)
                 {
                     info->nr_async_recorded++;
@@ -298,10 +303,7 @@ void test_async_rpc_send(struct thread_info *info, int NR_ASYNC_RPC)
 
             base = i - async_batch_size;
             for (k = 0; k < async_batch_size; k++)
-                wait_for_completion(&poll_array
-                                        [(base +
-                                          k) &
-                                         async_batch_size]);
+                wait_for_completion(&poll_array[(base + k) & async_batch_size]);
         }
     }
     clock_gettime(CLOCK_MONOTONIC, &end);
@@ -313,15 +315,13 @@ void test_async_rpc_send(struct thread_info *info, int NR_ASYNC_RPC)
     /* save to global array */
     per_rps[info->tid] = rps;
 
-    printf("[tid: %d] Performed #%10d async_rpc (batch_size: %u). "
-           "Total %13ld ns. RPC/s: %10lf\n",
+    printf("[tid: %d] Performed #%10d async_rpc (batch_size: %u). Total %13ld ns. RPC/s: %10lf\n",
            info->tid, NR_ASYNC_RPC, async_batch_size, diff_ns, rps);
 
     if (record_async_latency)
     {
         printf("  ..\033[32m [tid: %d] async_rpc latency numbers: total = %12lf ns, nr = %d, avg = %12lf ns \033[0m\n",
-               info->tid, info->total_async_lat, info->nr_async_recorded,
-               info->total_async_lat / info->nr_async_recorded);
+               info->tid, info->total_async_lat, info->nr_async_recorded, info->total_async_lat / info->nr_async_recorded);
     }
 }
 
@@ -331,8 +331,8 @@ void test_async_rpc_recv(struct thread_info *info, int NR_ASYNC_RPC)
     uintptr_t descriptor;
     char *read, *write;
 
-    read = memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
-    write = memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
+    read = (char *)memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
+    write = (char *)memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
     mlock(read, 4096);
     mlock(write, 4096);
 
@@ -375,7 +375,7 @@ static void print_rps(int nr_rpc, const char *who)
 
 void *thread_send_lat(void *_info)
 {
-    struct thread_info *info = _info;
+    struct thread_info *info = (struct thread_info *)_info;
     int i, b, nr_rpc;
 
     /*
@@ -398,17 +398,21 @@ void *thread_send_lat(void *_info)
     b = pthread_barrier_wait(&thread_barrier);
     if (b == PTHREAD_BARRIER_SERIAL_THREAD)
         print_rps(nr_rpc, "sync");
+
+    pthread_exit(NULL);
 }
 
 void *thread_recv(void *_info)
 {
-    struct thread_info *info = _info;
+    struct thread_info *info = (struct thread_info *)_info;
     int i, nr_rpc;
 
     nr_rpc = 1000 * 1000 * 1;
 
     test_async_rpc_recv(info, nr_rpc);
     test_sync_rpc_recv(info, nr_rpc);
+
+    pthread_exit(NULL);
 }
 
 void run(bool server_mode, int remote_node)
@@ -418,9 +422,9 @@ void run(bool server_mode, int remote_node)
     pthread_t *threads;
     struct thread_info *info;
 
-    threads = malloc(sizeof(*threads) * nr_threads);
-    per_rps = malloc(sizeof(*per_rps) * nr_threads);
-    info = malloc(sizeof(*info) * nr_threads);
+    threads = (pthread_t *)malloc(sizeof(*threads) * nr_threads);
+    per_rps = (double *)malloc(sizeof(*per_rps) * nr_threads);
+    info = (struct thread_info *)malloc(sizeof(*info) * nr_threads);
     memset(info, 0, sizeof(*info) * nr_threads);
 
     pthread_barrier_init(&thread_barrier, NULL, nr_threads);
@@ -442,12 +446,14 @@ void run(bool server_mode, int remote_node)
             info[i].outbound_port = base_port + 1;
             info[i].tid = i;
 
-			/* provided by program argument list */
+            /* provided by program argument list */
             info[i].remote_nid = remote_node;
         }
 
         userspace_liteapi_register_application(info[0].inbound_port,
-                                               4096, 16, name,
+                                               4096,
+                                               16,
+                                               name,
                                                strlen(name));
 
         userspace_liteapi_dist_barrier(2);
@@ -458,12 +464,10 @@ void run(bool server_mode, int remote_node)
          * which is base_port + 1
          */
         printf("Server: Query remote id %d port %d\n", info[0].remote_nid, info[0].outbound_port);
-        userspace_liteapi_query_port(info[0].remote_nid,
-                                     info[0].outbound_port);
+        userspace_liteapi_query_port(info[0].remote_nid, info[0].outbound_port);
 
         for (i = 0; i < nr_threads; i++)
-            pthread_create(&threads[i], NULL, thread_recv,
-                           info + i);
+            pthread_create(&threads[i], NULL, thread_recv, info + i);
         for (i = 0; i < nr_threads; i++)
             pthread_join(threads[i], NULL);
     }
@@ -478,7 +482,9 @@ void run(bool server_mode, int remote_node)
         }
 
         userspace_liteapi_register_application(info[0].inbound_port,
-                                               4096, 16, name,
+                                               4096,
+                                               16,
+                                               name,
                                                strlen(name));
 
         userspace_liteapi_dist_barrier(2);
@@ -489,12 +495,10 @@ void run(bool server_mode, int remote_node)
          * which is base_port
          */
         printf("Client: Query remote id %d port %d\n", info[0].remote_nid, info[0].outbound_port);
-        userspace_liteapi_query_port(info[0].remote_nid,
-                                     info[0].outbound_port);
+        userspace_liteapi_query_port(info[0].remote_nid, info[0].outbound_port);
 
         for (i = 0; i < nr_threads; i++)
-            pthread_create(&threads[i], NULL, thread_send_lat,
-                           info + i);
+            pthread_create(&threads[i], NULL, thread_send_lat, info + i);
         for (i = 0; i < nr_threads; i++)
             pthread_join(threads[i], NULL);
     }
@@ -503,10 +507,8 @@ void run(bool server_mode, int remote_node)
 static void usage(const char *argv0)
 {
     printf("Usage:\n");
-    printf("  %s -s -n <nid>           start a server and wait for connection from <nid>\n",
-           argv0);
-    printf("  %s -c -n <nid>           start a client and connect to server at <nid>\n",
-           argv0);
+    printf("  %s -s -n <nid>           start a server and wait for connection from <nid>\n", argv0);
+    printf("  %s -c -n <nid>           start a client and connect to server at <nid>\n", argv0);
     printf("  %s -c -n <nid> -b 128\n", argv0);
     printf("  %s -c -n <nid> --thread=16\n", argv0);
     printf("  %s -c -n <nid> -b 128 --thread=16\n", argv0);
