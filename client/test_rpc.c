@@ -20,7 +20,6 @@
 #include <time.h>
 #include <sys/mman.h>
 #include <sys/time.h>
-#include <sys/syscall.h>
 #include <stdbool.h>
 #include <malloc.h>
 #include <getopt.h>
@@ -101,11 +100,13 @@ int async_rpc(int dst_nid, int dst_port, void *buf, int buf_size,
         return -EINVAL;
     }
 
-    ret = syscall(__NR_lite_send_reply_imm,
-                  dst_nid,
-                  (buf_size << IMM_MAX_PORT_BIT) + dst_port,
-                  buf, ret_buf, ret_size_ptr,
-                  (max_ret_size << IMM_MAX_PRIORITY_BIT) + NULL_PRIORITY);
+    ret = userspace_liteapi_send_reply_imm_fast(dst_nid,
+                                                dst_port,
+                                                buf,
+                                                buf_size,
+                                                ret_buf,
+                                                ret_size_ptr,
+                                                max_ret_size);
     if (ret < 0)
         perror("lite_send_reply syscall failed");
     return 0;
