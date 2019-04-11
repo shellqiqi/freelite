@@ -76,7 +76,7 @@ int userspace_liteapi_alloc_remote_mem(unsigned int node_id,
  * Processing write request from userspace
  * Input:
  *    lite_handler: lite_handler behind the targetted LMR
- *    local_addr: input address
+ *    local_addr: input address of router
  *    size: request size
  *    priority: high, low, or non
  *    offset: request offset
@@ -109,7 +109,7 @@ int userspace_liteapi_rdma_write(unsigned lite_handler,
  * Processing read request from userspace
  * Input:
  *    lite_handler: lite_handler behind the targetted LMR
- *    local_addr: input address
+ *    local_addr: input address of router
  *    size: request size
  *    priority: high, low, or non
  *    offset: request offset
@@ -143,9 +143,9 @@ int userspace_liteapi_rdma_read(unsigned lite_handler,
  * Input:
  *    target_node: target node id
  *    port: the combination of size and port
- *    addr: input address
- *    ret_addr: address to keep received message
- *    ret_length: keep the returned length of the message (for fast_receive)
+ *    addr: input address of router
+ *    ret_addr: address to keep received message of router
+ *    ret_length: keep the returned length of the message (for fast_receive), address of router
  *    max_ret_size: the combination of max_ret_size and priority
  * Return: length of received message
  */
@@ -179,7 +179,7 @@ int userspace_liteapi_send_reply_imm_fast(int target_node,
  * Processing a receive request (RPC-server) from userspace
  * Input:
  *    port: port
- *    ret_addr: address to keep received message
+ *    ret_addr: address to keep received message of router
  *    receive_size: receive size
  *    block_call: flag to show whether this is a blocking call or not
  * Output:
@@ -214,7 +214,7 @@ int userspace_liteapi_receive_message_fast(unsigned int port,
 /**
  * Processing a reply request in RPC from userspace
  * Input:
- *    addr: input address
+ *    addr: input address of router
  *    size: reply size
  *    descriptor: header of reply message (returned by lite_api_receive)
  *    priority: priority of the request
