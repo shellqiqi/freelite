@@ -111,9 +111,9 @@ void *server_accept_request(void *fd)
             LOG_INFO("  port: %d\n", req_msg.msg_body.receive_message_fast_req.port);
             LOG_INFO("  ret_addr: %p\n", req_msg.msg_body.receive_message_fast_req.ret_addr);
             LOG_INFO("  receive_size: %d\n", req_msg.msg_body.receive_message_fast_req.receive_size);
-            LOG_INFO("  descriptor: %p\n", req_msg.msg_body.receive_message_fast_req.descriptor);
-            LOG_INFO("  ret_length: %p\n", req_msg.msg_body.receive_message_fast_req.ret_length);
             LOG_INFO("  block_call: %d\n", req_msg.msg_body.receive_message_fast_req.block_call);
+            rsp_msg.msg_body.receive_message_fast_rsp.descriptor = 114514;
+            rsp_msg.msg_body.receive_message_fast_rsp.ret_length = 1919;
             rsp_msg.rval.int_rsp = 512;
             break;
         case FUNC_userspace_liteapi_reply_message:

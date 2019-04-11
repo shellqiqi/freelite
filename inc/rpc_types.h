@@ -49,8 +49,6 @@ struct receive_message_fast_req_msg
     unsigned int port;
     void *ret_addr;
     int receive_size;
-    uintptr_t *descriptor;
-    int *ret_length;
     int block_call;
 };
 
@@ -96,6 +94,12 @@ struct free_local_mem_req_msg
 
 /* Response messages */
 
+struct receive_message_fast_rsp_msg
+{
+    uintptr_t descriptor;
+    int ret_length;
+};
+
 struct alloc_local_mem_rsp_msg
 {
     void *remote_addr;
@@ -129,6 +133,7 @@ struct rpc_rsp_msg
     } rval;
     union {
         struct alloc_local_mem_rsp_msg alloc_local_mem_rsp;
+        struct receive_message_fast_rsp_msg receive_message_fast_rsp;
     } msg_body;
 };
 

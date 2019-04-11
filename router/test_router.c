@@ -121,22 +121,33 @@ void *server_accept_request(void *fd)
             LOG_INFO("  ret_addr: %p\n", req_msg.msg_body.send_reply_imm_fast_req.ret_addr);
             LOG_INFO("  ret_length: %p\n", req_msg.msg_body.send_reply_imm_fast_req.ret_length);
             LOG_INFO("  max_ret_size: %d\n", req_msg.msg_body.send_reply_imm_fast_req.max_ret_size);
-            rsp_msg.rval.int_rsp = 1024;
+            rsp_msg.rval.int_rsp = userspace_liteapi_send_reply_imm_fast(req_msg.msg_body.send_reply_imm_fast_req.target_node,
+                                                                         req_msg.msg_body.send_reply_imm_fast_req.port,
+                                                                         req_msg.msg_body.send_reply_imm_fast_req.ret_addr,
+                                                                         req_msg.msg_body.send_reply_imm_fast_req.size,
+                                                                         req_msg.msg_body.send_reply_imm_fast_req.ret_addr,
+                                                                         req_msg.msg_body.send_reply_imm_fast_req.ret_length,
+                                                                         req_msg.msg_body.send_reply_imm_fast_req.max_ret_size);
             break;
         case FUNC_userspace_liteapi_receive_message_fast:
             LOG_INFO("  port: %d\n", req_msg.msg_body.receive_message_fast_req.port);
             LOG_INFO("  ret_addr: %p\n", req_msg.msg_body.receive_message_fast_req.ret_addr);
             LOG_INFO("  receive_size: %d\n", req_msg.msg_body.receive_message_fast_req.receive_size);
-            LOG_INFO("  descriptor: %p\n", req_msg.msg_body.receive_message_fast_req.descriptor);
-            LOG_INFO("  ret_length: %p\n", req_msg.msg_body.receive_message_fast_req.ret_length);
             LOG_INFO("  block_call: %d\n", req_msg.msg_body.receive_message_fast_req.block_call);
-            rsp_msg.rval.int_rsp = 512;
+            rsp_msg.rval.int_rsp = userspace_liteapi_receive_message_fast(req_msg.msg_body.receive_message_fast_req.port,
+                                                                          req_msg.msg_body.receive_message_fast_req.ret_addr,
+                                                                          req_msg.msg_body.receive_message_fast_req.receive_size,
+                                                                          &rsp_msg.msg_body.receive_message_fast_rsp.descriptor,
+                                                                          &rsp_msg.msg_body.receive_message_fast_rsp.ret_length,
+                                                                          req_msg.msg_body.receive_message_fast_req.block_call);
             break;
         case FUNC_userspace_liteapi_reply_message:
             LOG_INFO("  port: %p\n", req_msg.msg_body.reply_message_req.addr);
             LOG_INFO("  ret_addr: %d\n", req_msg.msg_body.reply_message_req.size);
             LOG_INFO("  receive_size: %lu\n", req_msg.msg_body.reply_message_req.descriptor);
-            rsp_msg.rval.int_rsp = -4;
+            rsp_msg.rval.int_rsp = userspace_liteapi_reply_message(req_msg.msg_body.reply_message_req.addr,
+                                                                   req_msg.msg_body.reply_message_req.size,
+                                                                   req_msg.msg_body.reply_message_req.descriptor);
             break;
         case FUNC_userspace_liteapi_register_application:
             LOG_INFO("  destined_port: %d\n", req_msg.msg_body.register_application_req.destined_port);
@@ -144,16 +155,21 @@ void *server_accept_request(void *fd)
             LOG_INFO("  max_user_per_node: %d\n", req_msg.msg_body.register_application_req.max_user_per_node);
             LOG_INFO("  name: %s\n", req_msg.msg_body.register_application_req.name);
             LOG_INFO("  name_len: %lu\n", req_msg.msg_body.register_application_req.name_len);
-            rsp_msg.rval.int_rsp = -10;
+            rsp_msg.rval.int_rsp = userspace_liteapi_register_application(req_msg.msg_body.register_application_req.destined_port,
+                                                                          req_msg.msg_body.register_application_req.max_size_per_message,
+                                                                          req_msg.msg_body.register_application_req.max_user_per_node,
+                                                                          req_msg.msg_body.register_application_req.name,
+                                                                          req_msg.msg_body.register_application_req.name_len);
             break;
         case FUNC_userspace_liteapi_dist_barrier:
             LOG_INFO("  num: %d\n", req_msg.msg_body.dist_barrier_req.num);
-            rsp_msg.rval.int_rsp = -7;
+            rsp_msg.rval.int_rsp = userspace_liteapi_dist_barrier(req_msg.msg_body.dist_barrier_req.num);
             break;
         case FUNC_userspace_liteapi_query_port:
             LOG_INFO("  target_node: %d\n", req_msg.msg_body.query_port_req.target_node);
             LOG_INFO("  designed_port: %d\n", req_msg.msg_body.query_port_req.designed_port);
-            rsp_msg.rval.int_rsp = -9;
+            rsp_msg.rval.int_rsp = userspace_liteapi_query_port(req_msg.msg_body.query_port_req.target_node,
+                                                                req_msg.msg_body.query_port_req.designed_port);
             break;
         case FUNC_userspace_liteapi_alloc_local_mem:
             LOG_INFO("  name: %s\n", req_msg.msg_body.alloc_local_mem_req.name);

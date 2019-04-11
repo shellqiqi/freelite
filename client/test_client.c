@@ -3,6 +3,8 @@
 
 int main(int argc, char *argv[])
 {
+    int val;
+
     LOG_INFO("userspace_liteapi_join: %d\n",
              userspace_liteapi_join("127.0.0.1", 18500, 1));
     LOG_INFO("userspace_liteapi_get_node_id: %d\n",
@@ -15,8 +17,10 @@ int main(int argc, char *argv[])
              userspace_liteapi_rdma_read(2233, (void *)0x1ff, 2048, 128, 54321));
     LOG_INFO("userspace_liteapi_send_reply_imm_fast: %d\n",
              userspace_liteapi_send_reply_imm_fast(2, 1, (void *)0x100, 2048, (void *)0x200, (int *)0x300, 4096));
-    LOG_INFO("userspace_liteapi_receive_message_fast: %d\n",
-             userspace_liteapi_receive_message_fast(1, (void *)0x100, 1024, (uintptr_t *)0x200, (int *)0x300, 1));
+    uintptr_t descriptor = 0;
+    int ret_length = 0;
+    val = userspace_liteapi_receive_message_fast(1, (void *)0x100, 1024, &descriptor, &ret_length, 1);
+    LOG_INFO("userspace_liteapi_receive_message_fast: %d, %lu, %d\n", val, descriptor, ret_length);
     LOG_INFO("userspace_liteapi_reply_message: %d\n",
              userspace_liteapi_reply_message((void *)0xf88, 128, 321));
     LOG_INFO("userspace_liteapi_register_application: %d\n",
@@ -25,7 +29,6 @@ int main(int argc, char *argv[])
              userspace_liteapi_dist_barrier(16));
     LOG_INFO("userspace_liteapi_query_port: %d\n",
              userspace_liteapi_query_port(2, 1));
-    int val;
     void *local_addr = NULL, *remote_addr = NULL;
     val = userspace_liteapi_alloc_local_mem_test("SHMALLOC", 1024, &local_addr, &remote_addr);
     LOG_INFO("userspace_liteapi_alloc_local_mem_test: %d, %p, %p\n", val, local_addr, remote_addr);
