@@ -34,11 +34,11 @@ sudo docker run --name lite_client_0 -v /var/tmp/:/var/tmp/ -v /dev/shm/:/dev/sh
 
 ## 问题
 
-### Router与用户程序的内存管理
+### Router与用户程序的内存管理（已解决）
 
 添加函数`userspace_liteapi_alloc_local_mem`，将用户需要的内存与Router分配的内存建立映射
 
-### 参数传递问题
+### 参数传递问题（已解决）
 
 以下三个函数的参数意义不明确，特别是第二个函数参数中带有`uintptr_t *descriptor`，第三个中有`uintptr_t descriptor`
 
@@ -53,8 +53,8 @@ int userspace_liteapi_send_reply_imm_fast(int target_node,
 int userspace_liteapi_receive_message_fast(unsigned int port,
                                            void *ret_addr,
                                            int receive_size,
-                                           uintptr_t *descriptor,
-                                           int *ret_length,
+                                           uintptr_t *descriptor, // Output
+                                           int *ret_length,       // Output
                                            int block_call);
 int userspace_liteapi_reply_message(void *addr,
                                     int size,
@@ -69,3 +69,10 @@ struct imm_message_metadata *descriptor;
 ```
 
 需要进一步确定这三个函数的变量是否是输出型
+
+### lite_rpc.c的运行问题
+
+该问题继承自原项目
+
+> Its RPC server must accept client at **nid 1**.
+> Need more tests.
