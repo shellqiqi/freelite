@@ -161,13 +161,15 @@ void test_sync_rpc_send(struct thread_info *info, int NR_SYNC_RPC)
     int *poll_array;
     int i, ret;
     char *read, *write;
+    void *remote_read, *remote_write, *remote_poll_array;
     struct timespec start, end;
     long diff_ns;
     double rps;
 
-    read = (char *)memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
-    write = (char *)memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
-    poll_array = (int *)memalign(sysconf(_SC_PAGESIZE), sizeof(int));
+    userspace_liteapi_alloc_local_mem("test_sync_rpc_send_read", 4096 * 2, (void **)&read, &remote_read);
+    userspace_liteapi_alloc_local_mem("test_sync_rpc_send_write", 4096 * 2, (void **)&write, &remote_write);
+    userspace_liteapi_alloc_local_mem("test_sync_rpc_send_poll_array", sizeof(int), (void **)&poll_array, &remote_poll_array);
+
     memset(poll_array, 0, sizeof(int));
 
     mlock(read, 4096);
@@ -198,6 +200,10 @@ void test_sync_rpc_send(struct thread_info *info, int NR_SYNC_RPC)
 
     /* save to global array */
     per_rps[info->tid] = rps;
+
+    userspace_liteapi_free_local_mem("test_sync_rpc_send_read", 4096 * 2, read, remote_read);
+    userspace_liteapi_free_local_mem("test_sync_rpc_send_write", 4096 * 2, write, remote_write);
+    userspace_liteapi_free_local_mem("test_sync_rpc_send_poll_array", sizeof(int), poll_array, remote_poll_array);
 }
 
 void test_sync_rpc_recv(struct thread_info *info, int NR_SYNC_RPC)
@@ -205,9 +211,10 @@ void test_sync_rpc_recv(struct thread_info *info, int NR_SYNC_RPC)
     int i, ret, ret_length;
     uintptr_t descriptor;
     char *read, *write;
+    void *remote_read, *remote_write;
 
-    read = (char *)memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
-    write = (char *)memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
+    userspace_liteapi_alloc_local_mem("test_sync_rpc_recv_read", 4096 * 2, (void **)&read, &remote_read);
+    userspace_liteapi_alloc_local_mem("test_sync_rpc_recv_write", 4096 * 2, (void **)&write, &remote_write);
     mlock(read, 4096);
     mlock(write, 4096);
 
@@ -220,6 +227,8 @@ void test_sync_rpc_recv(struct thread_info *info, int NR_SYNC_RPC)
                                                      BLOCK_CALL);
         userspace_liteapi_reply_message(write, 4, descriptor);
     }
+    userspace_liteapi_free_local_mem("test_sync_rpc_recv_read", 4096 * 2, read, remote_read);
+    userspace_liteapi_free_local_mem("test_sync_rpc_recv_write", 4096 * 2, write, remote_write);
 }
 
 /*
@@ -232,14 +241,15 @@ void test_async_rpc_send(struct thread_info *info, int NR_ASYNC_RPC)
     int *poll_array;
     int i, base, ret;
     char *read, *write;
+    void *remote_read, *remote_write, *remote_poll_array;
     struct timespec start, end;
     struct timespec async_start_prev, async_start, async_end;
     long diff_ns, async_diff_ns;
     double rps;
 
-    read = (char *)memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
-    write = (char *)memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
-    poll_array = (int *)memalign(sysconf(_SC_PAGESIZE), sizeof(int) * async_batch_size);
+    userspace_liteapi_alloc_local_mem("test_async_rpc_send_read", 4096 * 2, (void **)&read, &remote_read);
+    userspace_liteapi_alloc_local_mem("test_async_rpc_send_write", 4096 * 2, (void **)&write, &remote_write);
+    userspace_liteapi_alloc_local_mem("test_async_rpc_send_poll_array", sizeof(int) * async_batch_size, (void **)&poll_array, &remote_poll_array);
     memset(poll_array, 0, sizeof(int) * async_batch_size);
     mlock(read, 4096);
     mlock(write, 4096);
@@ -323,6 +333,10 @@ void test_async_rpc_send(struct thread_info *info, int NR_ASYNC_RPC)
         printf("  ..\033[32m [tid: %d] async_rpc latency numbers: total = %12lf ns, nr = %d, avg = %12lf ns \033[0m\n",
                info->tid, info->total_async_lat, info->nr_async_recorded, info->total_async_lat / info->nr_async_recorded);
     }
+
+    userspace_liteapi_free_local_mem("test_async_rpc_send_read", 4096 * 2, read, remote_read);
+    userspace_liteapi_free_local_mem("test_async_rpc_send_write", 4096 * 2, write, remote_write);
+    userspace_liteapi_free_local_mem("test_async_rpc_send_poll_array", sizeof(int) * async_batch_size, poll_array, remote_poll_array);
 }
 
 void test_async_rpc_recv(struct thread_info *info, int NR_ASYNC_RPC)
@@ -330,9 +344,10 @@ void test_async_rpc_recv(struct thread_info *info, int NR_ASYNC_RPC)
     int i, ret, ret_length;
     uintptr_t descriptor;
     char *read, *write;
+    void *remote_read, *remote_write;
 
-    read = (char *)memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
-    write = (char *)memalign(sysconf(_SC_PAGESIZE), 4096 * 2);
+    userspace_liteapi_alloc_local_mem("test_async_rpc_recv_read", 4096 * 2, (void **)&read, &remote_read);
+    userspace_liteapi_alloc_local_mem("test_async_rpc_recv_write", 4096 * 2, (void **)&write, &remote_write);
     mlock(read, 4096);
     mlock(write, 4096);
 
@@ -345,6 +360,8 @@ void test_async_rpc_recv(struct thread_info *info, int NR_ASYNC_RPC)
                                                      BLOCK_CALL);
         userspace_liteapi_reply_message(write, 4, descriptor);
     }
+    userspace_liteapi_free_local_mem("test_async_rpc_recv_read", 4096 * 2, read, remote_read);
+    userspace_liteapi_free_local_mem("test_async_rpc_recv_write", 4096 * 2, write, remote_write);
 }
 
 int testsize[7] = {8, 8, 64, 512, 1024, 2048, 4096};
