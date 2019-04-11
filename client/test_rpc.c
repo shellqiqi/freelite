@@ -158,17 +158,17 @@ static unsigned int async_batch_size = 32;
 
 void test_sync_rpc_send(struct thread_info *info, int NR_SYNC_RPC)
 {
-    int *poll_array;
+    int *poll_array, *remote_poll_array;
     int i, ret;
     char *read, *write;
-    void *remote_read, *remote_write, *remote_poll_array;
+    void *remote_read, *remote_write;
     struct timespec start, end;
     long diff_ns;
     double rps;
 
     userspace_liteapi_alloc_local_mem("test_sync_rpc_send_read", 4096 * 2, (void **)&read, &remote_read);
     userspace_liteapi_alloc_local_mem("test_sync_rpc_send_write", 4096 * 2, (void **)&write, &remote_write);
-    userspace_liteapi_alloc_local_mem("test_sync_rpc_send_poll_array", sizeof(int), (void **)&poll_array, &remote_poll_array);
+    userspace_liteapi_alloc_local_mem("test_sync_rpc_send_poll_array", sizeof(int), (void **)&poll_array, (void **)&remote_poll_array);
 
     memset(poll_array, 0, sizeof(int));
 
@@ -184,10 +184,10 @@ void test_sync_rpc_send(struct thread_info *info, int NR_SYNC_RPC)
          */
         userspace_liteapi_send_reply_imm_fast(info->remote_nid,
                                               info->outbound_port,
-                                              write,
+                                              remote_write,
                                               4,
-                                              read,
-                                              poll_array,
+                                              remote_read,
+                                              remote_poll_array,
                                               4096);
     }
     clock_gettime(CLOCK_MONOTONIC, &end);
@@ -221,11 +221,11 @@ void test_sync_rpc_recv(struct thread_info *info, int NR_SYNC_RPC)
     for (i = 0; i < NR_SYNC_RPC; i++)
     {
         ret = userspace_liteapi_receive_message_fast(info->inbound_port,
-                                                     read, 4096,
+                                                     remote_read, 4096,
                                                      &descriptor,
                                                      &ret_length,
                                                      BLOCK_CALL);
-        userspace_liteapi_reply_message(write, 4, descriptor);
+        userspace_liteapi_reply_message(remote_write, 4, descriptor);
     }
     userspace_liteapi_free_local_mem("test_sync_rpc_recv_read", 4096 * 2, read, remote_read);
     userspace_liteapi_free_local_mem("test_sync_rpc_recv_write", 4096 * 2, write, remote_write);
@@ -238,10 +238,10 @@ void test_sync_rpc_recv(struct thread_info *info, int NR_SYNC_RPC)
  */
 void test_async_rpc_send(struct thread_info *info, int NR_ASYNC_RPC)
 {
-    int *poll_array;
+    int *poll_array, *remote_poll_array;
     int i, base, ret;
     char *read, *write;
-    void *remote_read, *remote_write, *remote_poll_array;
+    void *remote_read, *remote_write;
     struct timespec start, end;
     struct timespec async_start_prev, async_start, async_end;
     long diff_ns, async_diff_ns;
@@ -249,7 +249,7 @@ void test_async_rpc_send(struct thread_info *info, int NR_ASYNC_RPC)
 
     userspace_liteapi_alloc_local_mem("test_async_rpc_send_read", 4096 * 2, (void **)&read, &remote_read);
     userspace_liteapi_alloc_local_mem("test_async_rpc_send_write", 4096 * 2, (void **)&write, &remote_write);
-    userspace_liteapi_alloc_local_mem("test_async_rpc_send_poll_array", sizeof(int) * async_batch_size, (void **)&poll_array, &remote_poll_array);
+    userspace_liteapi_alloc_local_mem("test_async_rpc_send_poll_array", sizeof(int) * async_batch_size, (void **)&poll_array, (void **)&remote_poll_array);
     memset(poll_array, 0, sizeof(int) * async_batch_size);
     mlock(read, 4096);
     mlock(write, 4096);
@@ -286,10 +286,10 @@ void test_async_rpc_send(struct thread_info *info, int NR_ASYNC_RPC)
          */
         async_rpc(info->remote_nid,
                   info->outbound_port,
-                  write,
+                  remote_write,
                   4,
-                  read,
-                  &poll_array[i % async_batch_size],
+                  remote_read,
+                  &remote_poll_array[i % async_batch_size],
                   4096);
 
         /* Perform batch completion check */
@@ -354,11 +354,11 @@ void test_async_rpc_recv(struct thread_info *info, int NR_ASYNC_RPC)
     for (i = 0; i < NR_ASYNC_RPC; i++)
     {
         ret = userspace_liteapi_receive_message_fast(info->inbound_port,
-                                                     read, 4096,
+                                                     remote_read, 4096,
                                                      &descriptor,
                                                      &ret_length,
                                                      BLOCK_CALL);
-        userspace_liteapi_reply_message(write, 4, descriptor);
+        userspace_liteapi_reply_message(remote_write, 4, descriptor);
     }
     userspace_liteapi_free_local_mem("test_async_rpc_recv_read", 4096 * 2, read, remote_read);
     userspace_liteapi_free_local_mem("test_async_rpc_recv_write", 4096 * 2, write, remote_write);
