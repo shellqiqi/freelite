@@ -16,6 +16,8 @@
 #include "../inc/log.h"
 #include "../inc/vcm_types.hpp"
 
+#define VCM_PORT 11451
+
 static std::mutex vcm_mutex;
 
 static std::unordered_map<int, int> vid_nid_map;
@@ -28,7 +30,7 @@ void INThandler(int sig)
     keepRunning = false;
 }
 
-int get_new_vid(int nid)
+int get_new_vid(const int &nid)
 {
     std::lock_guard<std::mutex> lock(vcm_mutex);
 
@@ -37,7 +39,7 @@ int get_new_vid(int nid)
     return vid;
 }
 
-int get_nid_by_vid(int vid)
+int get_nid_by_vid(const int &vid)
 {
     std::lock_guard<std::mutex> lock(vcm_mutex);
 
@@ -90,10 +92,10 @@ void *server_accept_request(void *fd)
         switch (msg.func_code)
         {
         case VID_NID:
-            get_nid_by_vid(msg.id);
+            msg.id = get_nid_by_vid(msg.id);
             break;
         case NID_VID:
-            get_new_vid(msg.id);
+            msg.id = get_new_vid(msg.id);
             break;
         default:
             LOG_ERROR("UNKNOWN FUNC CODE\n");
@@ -127,7 +129,7 @@ int main(void)
     struct sockaddr_in server_sockaddr;
     struct sockaddr_in client_sockaddr;
     int backlog = 10;
-    int port = 11451;
+    int port = VCM_PORT;
     memset(&server_sockaddr, 0, sizeof(struct sockaddr_in));
     memset(&client_sockaddr, 0, sizeof(struct sockaddr_in));
 
