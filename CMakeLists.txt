@@ -11,4 +11,5 @@ find_package(Threads REQUIRED)
 
 ADD_SUBDIRECTORY(client)
 ADD_SUBDIRECTORY(router)
+ADD_SUBDIRECTORY(vcm)
 
