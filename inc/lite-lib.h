@@ -54,11 +54,6 @@
 #define __NR_lite_join 426
 #define __NR_lite_rdma_read_async 427
 
-#define max(x, y)      \
-    ({                 \
-        x > y ? x : y; \
-    })
-
 struct lmr_info
 {
     void *addr;
@@ -128,173 +123,180 @@ enum permission_mode
 
 #define BLOCK_CALL 1
 
-int userspace_liteapi_get_node_id(void);
-int userspace_liteapi_get_total_node(void);
-int userspace_liteapi_dist_barrier(unsigned int num);
-int userspace_liteapi_register_application(unsigned int destined_port,
-                                           unsigned int max_size_per_message,
-                                           unsigned int max_user_per_node,
-                                           char *name,
-                                           uint64_t name_len);
-int userspace_liteapi_receive_message(unsigned int port,
-                                      void *ret_addr,
-                                      int receive_size,
-                                      uintptr_t *descriptor,
-                                      int block_call);
-int userspace_liteapi_receive_message_high(unsigned int port,
-                                           void *ret_addr,
-                                           int receive_size,
-                                           uintptr_t *descriptor,
-                                           int block_call);
-int userspace_liteapi_receive_message_low(unsigned int port,
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+    int userspace_liteapi_get_node_id(void);
+    int userspace_liteapi_get_total_node(void);
+    int userspace_liteapi_dist_barrier(unsigned int num);
+    int userspace_liteapi_register_application(unsigned int destined_port,
+                                               unsigned int max_size_per_message,
+                                               unsigned int max_user_per_node,
+                                               char *name,
+                                               uint64_t name_len);
+    int userspace_liteapi_receive_message(unsigned int port,
                                           void *ret_addr,
                                           int receive_size,
                                           uintptr_t *descriptor,
                                           int block_call);
-int userspace_liteapi_receive_message_fast(unsigned int port,
-                                           void *ret_addr,
-                                           int receive_size,
-                                           uintptr_t *descriptor,
-                                           int *ret_length,
-                                           int block_call);
-double userspace_liteapi_receive_message_fast_record(unsigned int port,
-                                                     void *ret_addr,
-                                                     int receive_size,
-                                                     uintptr_t *descriptor,
-                                                     int *ret_length,
-                                                     int block_call);
-int userspace_liteapi_send_reply_imm(int target_node,
-                                     unsigned int port,
-                                     void *addr,
-                                     int size,
-                                     void *ret_addr,
-                                     int max_ret_size);
-int userspace_liteapi_send_reply_imm_high(int target_node,
-                                          unsigned int port,
-                                          void *addr,
-                                          int size,
-                                          void *ret_addr,
-                                          int max_ret_size);
-int userspace_liteapi_send_reply_imm_low(int target_node,
+    int userspace_liteapi_receive_message_high(unsigned int port,
+                                               void *ret_addr,
+                                               int receive_size,
+                                               uintptr_t *descriptor,
+                                               int block_call);
+    int userspace_liteapi_receive_message_low(unsigned int port,
+                                              void *ret_addr,
+                                              int receive_size,
+                                              uintptr_t *descriptor,
+                                              int block_call);
+    int userspace_liteapi_receive_message_fast(unsigned int port,
+                                               void *ret_addr,
+                                               int receive_size,
+                                               uintptr_t *descriptor,
+                                               int *ret_length,
+                                               int block_call);
+    double userspace_liteapi_receive_message_fast_record(unsigned int port,
+                                                         void *ret_addr,
+                                                         int receive_size,
+                                                         uintptr_t *descriptor,
+                                                         int *ret_length,
+                                                         int block_call);
+    int userspace_liteapi_send_reply_imm(int target_node,
                                          unsigned int port,
                                          void *addr,
                                          int size,
                                          void *ret_addr,
                                          int max_ret_size);
-int userspace_liteapi_send_reply_imm_fast(int target_node,
-                                          unsigned int port,
-                                          void *addr,
-                                          int size,
-                                          void *ret_addr,
-                                          int *ret_length,
-                                          int max_ret_size);
-int userspace_liteapi_reply_message(void *addr,
-                                    int size,
-                                    uintptr_t descriptor);
-int userspace_liteapi_reply_message_high(void *addr,
-                                         int size,
-                                         uintptr_t descriptor);
-int userspace_liteapi_reply_message_low(void *addr,
+    int userspace_liteapi_send_reply_imm_high(int target_node,
+                                              unsigned int port,
+                                              void *addr,
+                                              int size,
+                                              void *ret_addr,
+                                              int max_ret_size);
+    int userspace_liteapi_send_reply_imm_low(int target_node,
+                                             unsigned int port,
+                                             void *addr,
+                                             int size,
+                                             void *ret_addr,
+                                             int max_ret_size);
+    int userspace_liteapi_send_reply_imm_fast(int target_node,
+                                              unsigned int port,
+                                              void *addr,
+                                              int size,
+                                              void *ret_addr,
+                                              int *ret_length,
+                                              int max_ret_size);
+    int userspace_liteapi_reply_message(void *addr,
                                         int size,
                                         uintptr_t descriptor);
-int userspace_liteapi_reply_and_receive_message(void *addr,
-                                                int size,
-                                                uintptr_t descriptor,
-                                                unsigned int port,
-                                                void *ret_addr,
-                                                int receive_size,
-                                                uintptr_t *receive_descriptor);
-int userspace_liteapi_query_port(int target_node,
-                                 int designed_port);
-int userspace_liteapi_wrap_alloc(void *data,
-                                 int size,
-                                 uint64_t identifier,
-                                 int password);
-int userspace_liteapi_ask_lmr(int memory_node,
-                              uint64_t identifier,
-                              uint64_t permission,
-                              int password);
-int userspace_liteapi_rdma_read(unsigned lite_handler,
-                                void *local_addr,
-                                unsigned int size,
-                                unsigned int offset,
-                                int password);
-int userspace_liteapi_rdma_read_high(unsigned lite_handler,
-                                     void *local_addr,
-                                     unsigned int size,
-                                     unsigned int offset,
+    int userspace_liteapi_reply_message_high(void *addr,
+                                             int size,
+                                             uintptr_t descriptor);
+    int userspace_liteapi_reply_message_low(void *addr,
+                                            int size,
+                                            uintptr_t descriptor);
+    int userspace_liteapi_reply_and_receive_message(void *addr,
+                                                    int size,
+                                                    uintptr_t descriptor,
+                                                    unsigned int port,
+                                                    void *ret_addr,
+                                                    int receive_size,
+                                                    uintptr_t *receive_descriptor);
+    int userspace_liteapi_query_port(int target_node,
+                                     int designed_port);
+    int userspace_liteapi_wrap_alloc(void *data,
+                                     int size,
+                                     uint64_t identifier,
                                      int password);
-int userspace_liteapi_rdma_read_low(unsigned lite_handler,
+    int userspace_liteapi_ask_lmr(int memory_node,
+                                  uint64_t identifier,
+                                  uint64_t permission,
+                                  int password);
+    int userspace_liteapi_rdma_read(unsigned lite_handler,
                                     void *local_addr,
                                     unsigned int size,
                                     unsigned int offset,
                                     int password);
-int userspace_liteapi_rdma_write(unsigned lite_handler,
-                                 void *local_addr,
-                                 unsigned int size,
-                                 unsigned int offset,
-                                 int password);
-int userspace_liteapi_rdma_write_high(unsigned lite_handler,
-                                      void *local_addr,
-                                      unsigned int size,
-                                      unsigned int offset,
-                                      int password);
-int userspace_liteapi_rdma_write_low(unsigned lite_handler,
+    int userspace_liteapi_rdma_read_high(unsigned lite_handler,
+                                         void *local_addr,
+                                         unsigned int size,
+                                         unsigned int offset,
+                                         int password);
+    int userspace_liteapi_rdma_read_low(unsigned lite_handler,
+                                        void *local_addr,
+                                        unsigned int size,
+                                        unsigned int offset,
+                                        int password);
+    int userspace_liteapi_rdma_write(unsigned lite_handler,
                                      void *local_addr,
                                      unsigned int size,
                                      unsigned int offset,
                                      int password);
-void *userspace_liteapi_alloc_memory(unsigned long size);
-int userspace_liteapi_create_lock(int target_node,
-                                  remote_spinlock_t *input);
-int userspace_liteapi_ask_lock(int target_node,
-                               int target_idx,
-                               remote_spinlock_t *input);
-int userspace_liteapi_lock(remote_spinlock_t *input);
-int userspace_liteapi_unlock(remote_spinlock_t *input);
-int userspace_liteapi_memset(unsigned lite_handler,
-                             int offset,
-                             int size);
-int userspace_liteapi_alloc_remote_mem(unsigned int node_id,
-                                       unsigned int size,
-                                       bool atomic_flag,
-                                       int password);
-int userspace_liteapi_compare_swp(unsigned long lite_handler,
-                                  void *local_addr,
-                                  unsigned long long guess_value,
-                                  unsigned long long set_value);
-int userspace_liteapi_add_ask_mr_table(uint64_t identifier,
-                                       uint64_t lmr,
-                                       uint64_t permission,
-                                       int password);
-int userspace_liteapi_remote_memset(unsigned lite_handler,
-                                    int offset,
-                                    int size);
-int userspace_liteapi_fetch_add(unsigned long lite_handler,
-                                void *local_addr,
-                                unsigned long long input_value);
-int userspace_syscall_test(void);
-int userspace_liteapi_join(char *input_str,
-                           int eth_port,
-                           int ib_port);
-int stick_this_thread_to_core(int core_id);
-int userspace_liteapi_send(int target_node,
-                           unsigned int port,
-                           void *addr,
-                           int size);
+    int userspace_liteapi_rdma_write_high(unsigned lite_handler,
+                                          void *local_addr,
+                                          unsigned int size,
+                                          unsigned int offset,
+                                          int password);
+    int userspace_liteapi_rdma_write_low(unsigned lite_handler,
+                                         void *local_addr,
+                                         unsigned int size,
+                                         unsigned int offset,
+                                         int password);
+    void *userspace_liteapi_alloc_memory(unsigned long size);
+    int userspace_liteapi_create_lock(int target_node,
+                                      remote_spinlock_t *input);
+    int userspace_liteapi_ask_lock(int target_node,
+                                   int target_idx,
+                                   remote_spinlock_t *input);
+    int userspace_liteapi_lock(remote_spinlock_t *input);
+    int userspace_liteapi_unlock(remote_spinlock_t *input);
+    int userspace_liteapi_memset(unsigned lite_handler,
+                                 int offset,
+                                 int size);
+    int userspace_liteapi_alloc_remote_mem(unsigned int node_id,
+                                           unsigned int size,
+                                           bool atomic_flag,
+                                           int password);
+    int userspace_liteapi_compare_swp(unsigned long lite_handler,
+                                      void *local_addr,
+                                      unsigned long long guess_value,
+                                      unsigned long long set_value);
+    int userspace_liteapi_add_ask_mr_table(uint64_t identifier,
+                                           uint64_t lmr,
+                                           uint64_t permission,
+                                           int password);
+    int userspace_liteapi_remote_memset(unsigned lite_handler,
+                                        int offset,
+                                        int size);
+    int userspace_liteapi_fetch_add(unsigned long lite_handler,
+                                    void *local_addr,
+                                    unsigned long long input_value);
+    int userspace_syscall_test(void);
+    int userspace_liteapi_join(char *input_str,
+                               int eth_port,
+                               int ib_port);
+    int stick_this_thread_to_core(int core_id);
+    int userspace_liteapi_send(int target_node,
+                               unsigned int port,
+                               void *addr,
+                               int size);
 
-int userspace_liteapi_alloc_local_mem(const char *name,
-                                      const size_t size,
-                                      void **local_addr,
-                                      void **remote_addr);
-int userspace_liteapi_free_local_mem(const char *name,
-                                     size_t size,
-                                     void *local_addr,
-                                     void *remote_addr);
+    int userspace_liteapi_alloc_local_mem(const char *name,
+                                          const size_t size,
+                                          void **local_addr,
+                                          void **remote_addr);
+    int userspace_liteapi_free_local_mem(const char *name,
+                                         size_t size,
+                                         void *local_addr,
+                                         void *remote_addr);
 
-int userspace_liteapi_alloc_local_mem_test(const char *name,
-                                           const size_t size,
-                                           void **local_addr,
-                                           void **remote_addr);
+    int userspace_liteapi_alloc_local_mem_test(const char *name,
+                                               const size_t size,
+                                               void **local_addr,
+                                               void **remote_addr);
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LITE_LIB_H */

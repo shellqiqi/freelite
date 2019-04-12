@@ -14,7 +14,7 @@
 #include "../inc/lite-lib.h"
 #include "../inc/log.h"
 
-#include "lib/shm.h"
+#include "lib/shm.hpp"
 
 #define SERVER_PATH "/var/tmp/tpf_unix_sock.server"
 
