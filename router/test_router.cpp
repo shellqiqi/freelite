@@ -18,6 +18,8 @@
 
 #define SERVER_PATH "/var/tmp/tpf_unix_sock.server"
 
+static int nid = -1;
+
 static bool keepRunning = true;
 
 void INThandler(int sig)
@@ -69,15 +71,13 @@ void *server_accept_request(void *fd)
         switch (req_msg.func_code)
         {
         case FUNC_userspace_liteapi_get_node_id:
-            rsp_msg.rval.int_rsp = userspace_liteapi_get_node_id();
+            rsp_msg.rval.int_rsp = nid;
             break;
         case FUNC_userspace_liteapi_join:
             LOG_INFO("  eth_port: %d\n", req_msg.msg_body.join_req.eth_port);
             LOG_INFO("  ib_port: %d\n", req_msg.msg_body.join_req.ib_port);
             LOG_INFO("  input_str: %s\n", req_msg.msg_body.join_req.input_str);
-            rsp_msg.rval.int_rsp = userspace_liteapi_join(req_msg.msg_body.join_req.input_str,
-                                                          req_msg.msg_body.join_req.eth_port,
-                                                          req_msg.msg_body.join_req.ib_port);
+            rsp_msg.rval.int_rsp = nid;
             break;
         case FUNC_userspace_liteapi_alloc_remote_mem:
             LOG_INFO("  node_id: %d\n", req_msg.msg_body.alloc_remote_mem_req.node_id);
@@ -212,6 +212,17 @@ void *server_accept_request(void *fd)
 int main(void)
 {
     signal(SIGINT, INThandler); // handle SIGINT
+
+    nid = userspace_liteapi_join("172.16.0.254", 18500, 1);
+    if (nid <= 0 || nid > 10)
+    {
+        LOG_ERROR("Join cluster failed. Node ID %d.\n", nid);
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        LOG_NORMAL("Joined cluster. Node ID %d\n", nid);
+    }
 
     int server_sock, client_sock;
     socklen_t len;
