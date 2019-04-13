@@ -34,7 +34,6 @@ void *server_accept_request(void *fd)
     socklen_t len;
     int client_sock = *((int *)fd);
     std::string client_path;
-    std::string cid;
     struct rpc_req_msg req_msg;
     struct rpc_rsp_msg rsp_msg;
     struct sockaddr_un client_sockaddr;
@@ -52,7 +51,10 @@ void *server_accept_request(void *fd)
     }
     client_path = client_sockaddr.sun_path;
     LOG_DEBUG("Client socket filepath: %s\n", client_sockaddr.sun_path);
-    cid = client_path.substr(8, 6);
+#ifndef NO_CONTAINER
+    int temp_nid;
+    std::string cid = client_path.substr(8, 6);
+#endif
 
     while (1)
     {
@@ -77,23 +79,42 @@ void *server_accept_request(void *fd)
         switch (req_msg.func_code)
         {
         case FUNC_userspace_liteapi_get_node_id:
+#ifndef NO_CONTAINER
+            rsp_msg.rval.int_rsp = vcm_get_node_id(cid);
+#else
             rsp_msg.rval.int_rsp = router_nid;
+#endif
             break;
         case FUNC_userspace_liteapi_join:
             LOG_INFO("  eth_port: %d\n", req_msg.msg_body.join_req.eth_port);
             LOG_INFO("  ib_port: %d\n", req_msg.msg_body.join_req.ib_port);
             LOG_INFO("  input_str: %s\n", req_msg.msg_body.join_req.input_str);
+#ifndef NO_CONTAINER
+            rsp_msg.rval.int_rsp = vcm_join(cid);
+#else
             rsp_msg.rval.int_rsp = router_nid;
+#endif
             break;
         case FUNC_userspace_liteapi_alloc_remote_mem:
             LOG_INFO("  node_id: %d\n", req_msg.msg_body.alloc_remote_mem_req.node_id);
             LOG_INFO("  size: %d\n", req_msg.msg_body.alloc_remote_mem_req.size);
             LOG_INFO("  atomic_flag: %d\n", req_msg.msg_body.alloc_remote_mem_req.atomic_flag);
             LOG_INFO("  password: %d\n", req_msg.msg_body.alloc_remote_mem_req.password);
-            rsp_msg.rval.int_rsp = userspace_liteapi_alloc_remote_mem(req_msg.msg_body.alloc_remote_mem_req.node_id,
-                                                                      req_msg.msg_body.alloc_remote_mem_req.size,
-                                                                      req_msg.msg_body.alloc_remote_mem_req.atomic_flag,
-                                                                      req_msg.msg_body.alloc_remote_mem_req.password);
+#ifndef NO_CONTAINER
+            temp_nid = vcm_vid_nid(req_msg.msg_body.alloc_remote_mem_req.node_id);
+            LOG_INFO("  vid to nid: %d\n", temp_nid);
+            rsp_msg.rval.int_rsp = userspace_liteapi_alloc_remote_mem(
+                temp_nid,
+                req_msg.msg_body.alloc_remote_mem_req.size,
+                req_msg.msg_body.alloc_remote_mem_req.atomic_flag,
+                req_msg.msg_body.alloc_remote_mem_req.password);
+#else
+            rsp_msg.rval.int_rsp = userspace_liteapi_alloc_remote_mem(
+                req_msg.msg_body.alloc_remote_mem_req.node_id,
+                req_msg.msg_body.alloc_remote_mem_req.size,
+                req_msg.msg_body.alloc_remote_mem_req.atomic_flag,
+                req_msg.msg_body.alloc_remote_mem_req.password);
+#endif
             break;
         case FUNC_userspace_liteapi_rdma_write:
             LOG_INFO("  lite_handler: %d\n", req_msg.msg_body.rdma_write_req.lite_handler);
@@ -127,13 +148,27 @@ void *server_accept_request(void *fd)
             LOG_INFO("  ret_addr: %p\n", req_msg.msg_body.send_reply_imm_fast_req.ret_addr);
             LOG_INFO("  ret_length: %p\n", req_msg.msg_body.send_reply_imm_fast_req.ret_length);
             LOG_INFO("  max_ret_size: %d\n", req_msg.msg_body.send_reply_imm_fast_req.max_ret_size);
-            rsp_msg.rval.int_rsp = userspace_liteapi_send_reply_imm_fast(req_msg.msg_body.send_reply_imm_fast_req.target_node,
-                                                                         req_msg.msg_body.send_reply_imm_fast_req.port,
-                                                                         req_msg.msg_body.send_reply_imm_fast_req.ret_addr,
-                                                                         req_msg.msg_body.send_reply_imm_fast_req.size,
-                                                                         req_msg.msg_body.send_reply_imm_fast_req.ret_addr,
-                                                                         req_msg.msg_body.send_reply_imm_fast_req.ret_length,
-                                                                         req_msg.msg_body.send_reply_imm_fast_req.max_ret_size);
+#ifndef NO_CONTAINER
+            temp_nid = vcm_vid_nid(req_msg.msg_body.send_reply_imm_fast_req.target_node);
+            LOG_INFO("  vid to nid: %d\n", temp_nid);
+            rsp_msg.rval.int_rsp = userspace_liteapi_send_reply_imm_fast(
+                temp_nid,
+                req_msg.msg_body.send_reply_imm_fast_req.port,
+                req_msg.msg_body.send_reply_imm_fast_req.ret_addr,
+                req_msg.msg_body.send_reply_imm_fast_req.size,
+                req_msg.msg_body.send_reply_imm_fast_req.ret_addr,
+                req_msg.msg_body.send_reply_imm_fast_req.ret_length,
+                req_msg.msg_body.send_reply_imm_fast_req.max_ret_size);
+#else
+            rsp_msg.rval.int_rsp = userspace_liteapi_send_reply_imm_fast(
+                req_msg.msg_body.send_reply_imm_fast_req.target_node,
+                req_msg.msg_body.send_reply_imm_fast_req.port,
+                req_msg.msg_body.send_reply_imm_fast_req.ret_addr,
+                req_msg.msg_body.send_reply_imm_fast_req.size,
+                req_msg.msg_body.send_reply_imm_fast_req.ret_addr,
+                req_msg.msg_body.send_reply_imm_fast_req.ret_length,
+                req_msg.msg_body.send_reply_imm_fast_req.max_ret_size);
+#endif
             break;
         case FUNC_userspace_liteapi_receive_message_fast:
             LOG_INFO("  port: %d\n", req_msg.msg_body.receive_message_fast_req.port);
@@ -174,8 +209,17 @@ void *server_accept_request(void *fd)
         case FUNC_userspace_liteapi_query_port:
             LOG_INFO("  target_node: %d\n", req_msg.msg_body.query_port_req.target_node);
             LOG_INFO("  designed_port: %d\n", req_msg.msg_body.query_port_req.designed_port);
-            rsp_msg.rval.int_rsp = userspace_liteapi_query_port(req_msg.msg_body.query_port_req.target_node,
-                                                                req_msg.msg_body.query_port_req.designed_port);
+#ifndef NO_CONTAINER
+            temp_nid = vcm_vid_nid(req_msg.msg_body.query_port_req.target_node);
+            LOG_INFO("  vid to nid: %d\n", temp_nid);
+            rsp_msg.rval.int_rsp = userspace_liteapi_query_port(
+                temp_nid,
+                req_msg.msg_body.query_port_req.designed_port);
+#else
+            rsp_msg.rval.int_rsp = userspace_liteapi_query_port(
+                req_msg.msg_body.query_port_req.target_node,
+                req_msg.msg_body.query_port_req.designed_port);
+#endif
             break;
         case FUNC_userspace_liteapi_alloc_local_mem:
             LOG_INFO("  name: %s\n", req_msg.msg_body.alloc_local_mem_req.name);
