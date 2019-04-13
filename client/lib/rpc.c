@@ -90,7 +90,11 @@ int rpc_conn(const char *name)
      * succeed, then bind to that file.
      */
     client_sockaddr.sun_family = AF_UNIX;
+#ifndef NO_CONTAINER
     sprintf(client_sockaddr.sun_path, "%s%s%05d", CLIENT_PATH, cid, getpid());
+#else
+    sprintf(client_sockaddr.sun_path, "%s%05d", CLIENT_PATH, getpid());
+#endif
     len = sizeof(client_sockaddr);
 
     unlink(client_sockaddr.sun_path);
