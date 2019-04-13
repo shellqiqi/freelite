@@ -275,7 +275,7 @@ int main(void)
     }
 
     /* Connect cluster manager */
-    router_nid = userspace_liteapi_join("172.16.0.254", 18500, 1);
+    router_nid = userspace_liteapi_join((char *)"172.16.0.254", 18500, 1);
     if (router_nid <= 0 || router_nid > 10)
     {
         LOG_ERROR("Join cluster failed. Node ID %d.\n", router_nid);
