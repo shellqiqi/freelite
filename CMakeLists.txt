@@ -6,6 +6,8 @@ project(freelite VERSION 0.1.0)
 # WARNING & ERROR LOG_LEVEL=0
 add_definitions(-DLOG_LEVEL=1)
 
+# add_definitions(-DNO_CONTAINER)
+
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 

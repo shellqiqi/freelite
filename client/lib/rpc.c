@@ -18,6 +18,12 @@
 
 static int client_sock = -1;
 
+#ifndef NO_CONTAINER
+#define CID_PATH "/proc/1/cpuset"
+/* CLIENT_PATH append container id */
+static char cid[7];
+#endif
+
 /* PUBLIC FUNCTIONS */
 
 /**
@@ -41,6 +47,40 @@ int rpc_conn(const char *name)
         return -1;
     }
 
+#ifndef NO_CONTAINER
+    /* Get container id here */
+    FILE *file;
+    int c;
+    memset(cid, 0, sizeof(cid));
+    file = fopen(CID_PATH, "r");
+    if (file)
+    {
+        for (int i = 0; i < 8; ++i)
+        {
+            if ((c = getc(file)) == EOF)
+            {
+                LOG_ERROR("You are not in a container.\n");
+                return -1;
+            }
+        }
+        for (int i = 0; i < 6; ++i)
+        {
+            if ((c = getc(file)) == EOF)
+            {
+                LOG_ERROR("You are not in a container.\n");
+                return -1;
+            }
+            cid[i] = c;
+        }
+        fclose(file);
+    }
+    else
+    {
+        LOG_ERROR("No such file.\n");
+        return -1;
+    }
+#endif
+
     /**
      * Set up the UNIX sockaddr structure
      * by using AF_UNIX for the family and
@@ -50,7 +90,7 @@ int rpc_conn(const char *name)
      * succeed, then bind to that file.
      */
     client_sockaddr.sun_family = AF_UNIX;
-    sprintf(client_sockaddr.sun_path, "%s%05d", CLIENT_PATH, getpid());
+    sprintf(client_sockaddr.sun_path, "%s%s%05d", CLIENT_PATH, cid, getpid());
     len = sizeof(client_sockaddr);
 
     unlink(client_sockaddr.sun_path);

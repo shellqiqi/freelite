@@ -9,6 +9,8 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include <string>
+
 #include "../inc/func_code.h"
 #include "../inc/rpc_types.h"
 #include "../inc/lite-lib.h"
@@ -31,6 +33,8 @@ void *server_accept_request(void *fd)
 {
     socklen_t len;
     int client_sock = *((int *)fd);
+    std::string client_path;
+    std::string cid;
     struct rpc_req_msg req_msg;
     struct rpc_rsp_msg rsp_msg;
     struct sockaddr_un client_sockaddr;
@@ -46,7 +50,9 @@ void *server_accept_request(void *fd)
         close(client_sock);
         pthread_exit(NULL);
     }
+    client_path = client_sockaddr.sun_path;
     LOG_DEBUG("Client socket filepath: %s\n", client_sockaddr.sun_path);
+    cid = client_path.substr(8, 6);
 
     while (1)
     {
