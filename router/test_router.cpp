@@ -213,6 +213,17 @@ int main(void)
 {
     signal(SIGINT, INThandler); // handle SIGINT
 
+    /* Connect virtual cluster manager */
+    if (vcm_conn("172.16.0.254") < 0)
+    {
+        LOG_ERROR("Connect virtual cluster manager failed.\n");
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        LOG_NORMAL("Connected virtual cluster manager.\n");
+    }
+
     /* Connect cluster manager */
     router_nid = userspace_liteapi_join("172.16.0.254", 18500, 1);
     if (router_nid <= 0 || router_nid > 10)
@@ -223,17 +234,6 @@ int main(void)
     else
     {
         LOG_NORMAL("Joined cluster. Node ID %d\n", router_nid);
-    }
-
-    /* Connect virtual cluster manager */
-    if (vcm_conn("172.16.0.254") < 0)
-    {
-        LOG_ERROR("Connect virtual cluster manager failed.\n");
-        exit(EXIT_FAILURE);
-    }
-    else
-    {
-        LOG_NORMAL("Connected virtual cluster manager.\n");
     }
 
     int server_sock, client_sock;

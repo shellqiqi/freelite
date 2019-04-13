@@ -32,7 +32,7 @@ int vcm_conn(std::string vcm_ip)
     struct sockaddr_in server_sockaddr;
     memset(&server_sockaddr, 0, sizeof(struct sockaddr_in));
 
-    if ((client_sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
+    if ((client_sock = socket(PF_INET, SOCK_STREAM, 0)) < 0)
     {
         LOG_PERROR("SOCKET ERROR");
         return -1;
