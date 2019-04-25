@@ -1,5 +1,24 @@
 # Freelite
 
+## LITE内核安装
+
+参考项目内LITE运行环境搭建[文档](doc/LITE运行环境搭建.md)
+
+## 编译
+
+安装cmake, C/C++编译器。在项目根目录下新建build文件夹，并在build下执行
+
+```
+cmake ..
+make
+```
+
+## 项目硬件环境示例
+
+三台服务器，其中两台服务器上拥有IB网卡。没有IB网卡的服务器上启动vcm和LITE cluster manager。有网卡的两台服务器上启动容器并挂载LITE内核层，且在RDMA程序启动前启动Router。
+
+搭建环境时请修改硬编码的IP地址，主要是vcm的IP地址在`router/test_router.cpp`，LITE cluster manager的IP地址在`client/`下所有`lite_join`函数调用。
+
 ## 运行Router
 
 启动cluster manager，挂载LITE内核模块
